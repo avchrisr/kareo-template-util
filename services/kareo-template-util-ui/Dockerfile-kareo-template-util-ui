@@ -1,5 +1,5 @@
 # base image
-FROM node:10.16.0-alpine
+FROM node:10.16-alpine
 
 # set working directory. if not exist, it will be created.
 # WORKDIR can be used multiple times. each time, it will be relative to the previous WORKDIR path

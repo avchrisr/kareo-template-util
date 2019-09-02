@@ -115,10 +115,25 @@ public class TemplateRestControllerImplTest {
         copyTemplatesRequest.setFromType("USER");
         copyTemplatesRequest.setFromUsername("user1");
         copyTemplatesRequest.setToType("SYSTEM");
+        copyTemplatesRequest.setCreateNewSystemTemplate(true);
         long[] templateIds = {1L, 2L, 3L};
         copyTemplatesRequest.setTemplateIds(templateIds);
 
         when(templateService.getTemplateCount(anyString(), anyLong(), any(long[].class))).thenReturn(2);
+        templateRestController.copyTemplates(copyTemplatesRequest);
+    }
+
+    @Test(expected = BadRequestException.class)
+    public void copyTemplates_SystemTemplateIdToReplaceNotProvidedWhenReplacingOptionChecked_ShouldThrowBadRequestException() {
+
+        CopyTemplatesRequest copyTemplatesRequest = new CopyTemplatesRequest();
+        copyTemplatesRequest.setFromType("USER");
+        copyTemplatesRequest.setFromUsername("user1");
+        copyTemplatesRequest.setToType("SYSTEM");
+        copyTemplatesRequest.setCreateNewSystemTemplate(false);
+        long[] templateIds = {1L, 2L, 3L};
+        copyTemplatesRequest.setTemplateIds(templateIds);
+
         templateRestController.copyTemplates(copyTemplatesRequest);
     }
 
@@ -129,6 +144,7 @@ public class TemplateRestControllerImplTest {
         copyTemplatesRequest.setFromType("USER");
         copyTemplatesRequest.setFromUsername("user1");
         copyTemplatesRequest.setToType("SYSTEM");
+        copyTemplatesRequest.setCreateNewSystemTemplate(true);
         long[] templateIds = {1L, 2L, 3L};
         copyTemplatesRequest.setTemplateIds(templateIds);
 

@@ -4,12 +4,12 @@ services:
 
   kareo-template-util-ui:
     container_name: kareo-template-util-ui
-    image: kareo-template-util-ui:dev
-    # build:
-    #   context: .
-    #   dockerfile: Dockerfile
+    # image: kareo-template-util-ui:dev
+    build:
+      context: services/kareo-template-util-ui
+      dockerfile: Dockerfile-kareo-template-util-ui
     volumes:
-      - '.:/app'
+      - './services/kareo-template-util-ui:/app'
       - '/app/node_modules'
     # ports:        # not exposing UI port directly, as NGINX will re-direct you to it
       # - '3002:3000'
@@ -26,7 +26,12 @@ services:
     # -- if you want to scale, each instance must have a unique container name so cannot specify a container name
     # -- if container name is not specified, the container name pattern will be [project_name]_[service_name]_[count#]
     # container_name: kareo-template-util-service
-    image: kareo-template-util-service:dev
+    # image: kareo-template-util-service:dev
+    build:
+      context: services/kareo-template-util-service
+      dockerfile: Dockerfile-kareo-template-util-service
+      args:
+        - JAR_FILE=target/kareo-template-util-service-0.0.1-SNAPSHOT.jar
     # ports:
     #   - 19090:9090
     # expose:   # even if it's not exposed, it's still reachable via 9090. is it because of the network?
@@ -42,6 +47,8 @@ services:
       - POSTGRES_DB_JDBC_URL=${POSTGRES_DB_JDBC_URL}
       - POSTGRES_DB_USERNAME=${POSTGRES_DB_USERNAME}
       - POSTGRES_DB_PASSWORD=${POSTGRES_DB_PASSWORD}
+    depends_on:
+      - postgres
 
   postgres:
     container_name: kareo-template-util-postgres
@@ -56,7 +63,7 @@ services:
       - POSTGRES_PASSWORD=${POSTGRES_DB_PASSWORD}
       - POSTGRES_DB=${POSTGRES_DB_NAME}       # if not provided, it'll be the same as postgres username
     volumes:  # temporary. might really need to create a 3rd repo for docker-compose.yml and postgres, nginx configs, etc. ex) kareo-template-util-docker-compose
-      - '/Users/chrisr/MyProjects/react-projects/lottery/pgdata:/var/lib/postgresql/data'
+      - '~/my-projects/microservices-projects/kareo-template-util/pgdata:/var/lib/postgresql/data'
     networks:
       - kareo-template-util-backend
 
@@ -67,8 +74,8 @@ services:
       - ${NGINX_PORT}:80
     volumes:
       - './public:/srv/www/static'
-      - './conf/nginx/nginx.conf:/etc/nginx/nginx.conf'             # where http configs are done, including load balancing
-      - './conf/nginx/default.conf:/etc/nginx/conf.d/default.conf'  # where reverse proxy configs are done
+      - './devops/config/nginx/nginx.conf:/etc/nginx/nginx.conf'             # where http configs are done, including load balancing
+      - './devops/config/nginx/default.conf:/etc/nginx/conf.d/default.conf'  # where reverse proxy configs are done
     networks:
       - kareo-template-util-frontend
     depends_on:
