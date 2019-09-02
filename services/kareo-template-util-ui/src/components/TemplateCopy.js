@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { makeStyles } from '@material-ui/styles';
-import { Button, FormControl, FormControlLabel, FormLabel, InputLabel, LinearProgress,
-    MenuItem, Radio, RadioGroup, Select, SnackbarContent, TextField } from '@material-ui/core';
+import {
+    AppBar, Button, FormControl, FormControlLabel, FormLabel, InputLabel, LinearProgress,
+    MenuItem, Radio, RadioGroup, Select, SnackbarContent, TextField, Toolbar, Typography
+} from '@material-ui/core';
 
 import _ from 'lodash';
 import axios from 'axios';
@@ -24,7 +26,7 @@ const useStyles = makeStyles({
         // alignItems: 'center',
         // flexWrap: 'wrap',
 
-        margin: '1rem 2rem',
+        margin: '2rem',
 
         // width: '800px',
         // border: '2px solid blue',
@@ -250,196 +252,206 @@ function TemplateCopy() {
     };
 
     return (
-        <div className={classes.container}>
-            <div><h2>Copy Templates</h2></div>
-            <div></div>
+        <div>
             <div>
-                <FormControl>
-                    <InputLabel htmlFor="from-environment">From</InputLabel>
-                    <Select
-                        // native
-                        value={fromEnv}
+                <AppBar position="relative">
+                    <Toolbar>
+                        {/*<IconButton edge="start" className={classes.menuButton} color="inherit" aria-label="menu">*/}
+                        {/*    <MenuIcon />*/}
+                        {/*</IconButton>*/}
+                        <Typography variant="h5" className={classes.title}>
+                            Copy Templates
+                        </Typography>
+                        {/*<Button color="inherit">Login</Button>*/}
+                    </Toolbar>
+                </AppBar>
+            </div>
+            <div className={classes.container}>
+                <div>
+                    <FormControl>
+                        <InputLabel htmlFor="from-environment">From</InputLabel>
+                        <Select
+                            // native
+                            value={fromEnv}
+                            onChange={handleInputValueChange}
+                            // inputProps={{
+                            //     name: 'age',
+                            //     id: 'age-simple',
+                            // }}
+                            name="fromEnv"
+                        >
+                            {/* <option value="dev">DEV</option>
+                                <option value="qa">QA/TEST</option>
+                                <option value="prod">PRODUCTION</option> */}
+                            <MenuItem value="dev">DEV</MenuItem>
+                            <MenuItem value="qa">QA/TEST</MenuItem>
+                            <MenuItem value="prod">PRODUCTION</MenuItem>
+                        </Select>
+                    </FormControl>
+                </div>
+                <div>
+                    <FormControl>
+                        <InputLabel htmlFor="to-environment">To</InputLabel>
+                        <Select
+                            value={toEnv}
+                            onChange={handleInputValueChange}
+                            // inputProps={{
+                            //     name: 'age',
+                            //     id: 'age-simple',
+                            // }}
+                            name="toEnv"
+                        >
+                            <MenuItem value="dev">DEV</MenuItem>
+                            <MenuItem value="qa">QA/TEST</MenuItem>
+                            <MenuItem value="prod">PRODUCTION</MenuItem>
+                        </Select>
+                    </FormControl>
+                </div>
+
+                <div>
+                    <FormControl>
+                         <InputLabel htmlFor="from-type">Type</InputLabel>
+                        <Select
+                            value={fromType}
+                            onChange={handleInputValueChange}
+                            // inputProps={{
+                            //     name: 'age',
+                            //     id: 'age-simple',
+                            // }}
+                            name="fromType"
+                        >
+                            <MenuItem value="user">USER</MenuItem>
+                            <MenuItem value="system">SYSTEM</MenuItem>
+                        </Select>
+                    </FormControl>
+                </div>
+                <div>
+                    <FormControl>
+                         <InputLabel htmlFor="to-type">Type</InputLabel>
+                        <Select
+                            value={toType}
+                            onChange={handleInputValueChange}
+                            // inputProps={{
+                            //     name: 'age',
+                            //     id: 'age-simple',
+                            // }}
+                            name="toType"
+                        >
+                            <MenuItem value="user">USER</MenuItem>
+                            <MenuItem value="system">SYSTEM</MenuItem>
+                        </Select>
+                    </FormControl>
+                </div>
+                <div>
+                    <TextField
+                        label="Username"
+                        helperText="applicable only if copying from User"
+                        value={fromUsername}
+                        name="fromUsername"
                         onChange={handleInputValueChange}
-                        // inputProps={{
-                        //     name: 'age',
-                        //     id: 'age-simple',
-                        // }}
-                        name="fromEnv"
-                    >
-                        {/* <option value="dev">DEV</option>
-                    <option value="qa">QA/TEST</option>
-                    <option value="prod">PRODUCTION</option> */}
-                        <MenuItem value="dev">DEV</MenuItem>
-                        <MenuItem value="qa">QA/TEST</MenuItem>
-                        <MenuItem value="prod">PRODUCTION</MenuItem>
-                    </Select>
-                </FormControl>
-            </div>
-            <div>
-                <FormControl>
-                    <InputLabel htmlFor="to-environment">To</InputLabel>
-                    <Select
-                        value={toEnv}
+                        margin="normal"
+                        disabled={fromType !== 'user'}
+                    />
+                </div>
+                <div>
+                    <TextField
+                        label="Username"
+                        helperText="applicable only if copying to User"
+                        value={toUsername}
+                        name="toUsername"
                         onChange={handleInputValueChange}
-                        // inputProps={{
-                        //     name: 'age',
-                        //     id: 'age-simple',
-                        // }}
-                        name="toEnv"
-                    >
-                        <MenuItem value="dev">DEV</MenuItem>
-                        <MenuItem value="qa">QA/TEST</MenuItem>
-                        <MenuItem value="prod">PRODUCTION</MenuItem>
-                    </Select>
-                </FormControl>
-            </div>
-
-            <div>
-                <FormControl>
-                     <InputLabel htmlFor="from-type">Type</InputLabel>
-                    <Select
-                        value={fromType}
+                        margin="normal"
+                        disabled={toType !== 'user'}
+                    />
+                </div>
+                <div>
+                    <TextField
+                        // className={classes.textField}
+                        label="Template IDs"
+                        helperText="comma separated if multiple"
+                        value={templateIds}
+                        name="templateIds"
                         onChange={handleInputValueChange}
-                        // inputProps={{
-                        //     name: 'age',
-                        //     id: 'age-simple',
-                        // }}
-                        name="fromType"
-                    >
-                        <MenuItem value="user">USER</MenuItem>
-                        <MenuItem value="system">SYSTEM</MenuItem>
-                    </Select>
-                </FormControl>
-            </div>
-            <div>
-                <FormControl>
-                     <InputLabel htmlFor="to-type">Type</InputLabel>
-                    <Select
-                        value={toType}
-                        onChange={handleInputValueChange}
-                        // inputProps={{
-                        //     name: 'age',
-                        //     id: 'age-simple',
-                        // }}
-                        name="toType"
-                    >
-                        <MenuItem value="user">USER</MenuItem>
-                        <MenuItem value="system">SYSTEM</MenuItem>
-                    </Select>
-                </FormControl>
-            </div>
-            <div>
-                <TextField
-                    // className={classes.textField}
-                    label="Username"
-                    helperText="applicable only if copying from User"
-                    value={fromUsername}
-                    name="fromUsername"
-                    onChange={handleInputValueChange}
-                    margin="normal"
-                    disabled={fromType !== 'user'}
-                />
-            </div>
-            <div>
-                <TextField
-                    // className={classes.textField}
-                    label="Username"
-                    helperText="applicable only if copying to User"
-                    value={toUsername}
-                    name="toUsername"
-                    onChange={handleInputValueChange}
-                    margin="normal"
-                    disabled={toType !== 'user'}
-                />
-            </div>
-            <div>
-                <TextField
-                    // className={classes.textField}
-                    label="Template IDs"
-                    helperText="comma separated if multiple"
-                    value={templateIds}
-                    name="templateIds"
-                    onChange={handleInputValueChange}
-                    margin="normal"
-                />
-            </div>
-            <div>
-                {toType === 'system' &&
-                <span>
-                <FormControl>
-                    <FormLabel>Options for copying to System</FormLabel>
-                    <RadioGroup name="createOrReplaceSystemTemplate" value={createOrReplaceSystemTemplate} onChange={handleInputValueChange}>
-                        <FormControlLabel
-                            value="create"
-                            control={<Radio color="primary" />}
-                            label="Create New System Template"
-                            labelPlacement="end" />
-                        <FormControlLabel
-                            value="replace"
-                            control={<Radio color="primary" />}
-                            label="Replace Existing System Template (To retain deactivated status set by customers)"
-                            labelPlacement="end" />
-                    </RadioGroup>
-                </FormControl>
-                <TextField
-                    // className={classes.textField}
-                    label="Template ID to replace"
-                    helperText="only one ID is allowed"
-                    value={systemTemplateIdToReplace}
-                    name="systemTemplateIdToReplace"
-                    onChange={handleInputValueChange}
-                    margin="normal"
-                    disabled={createOrReplaceSystemTemplate === 'create'}
-                />
-            </span>
-                }
-            </div>
-            <div className={classes.buttons}>
-                <Button
-                    color="primary"
-                    variant="contained"
-                    fullWidth={false}
-                    disabled={isLoading}
-                    onClick={handleSubmit}
-                >Submit</Button>
+                        margin="normal"
+                    />
+                </div>
+                <div>
+                    {toType === 'system' &&
+                    <span>
+                        <FormControl style={{marginTop: '1rem'}}>
+                            <FormLabel>Options for copying to System</FormLabel>
+                            <RadioGroup name="createOrReplaceSystemTemplate" value={createOrReplaceSystemTemplate} onChange={handleInputValueChange}>
+                                <FormControlLabel
+                                    value="create"
+                                    control={<Radio color="primary" />}
+                                    label="Create New System Template"
+                                    labelPlacement="end" />
+                                <FormControlLabel
+                                    value="replace"
+                                    control={<Radio color="primary" />}
+                                    label="Replace Existing System Template (To retain deactivated status set by customers)"
+                                    labelPlacement="end" />
+                            </RadioGroup>
+                        </FormControl>
+                        <TextField style={{marginLeft: '2rem'}}
+                            label="Template ID to replace"
+                            helperText="only one ID is allowed"
+                            value={systemTemplateIdToReplace}
+                            name="systemTemplateIdToReplace"
+                            onChange={handleInputValueChange}
+                            margin="normal"
+                            disabled={createOrReplaceSystemTemplate === 'create'}
+                        />
+                    </span>
+                    }
+                </div>
+                <div className={classes.buttons}>
+                    <Button
+                        color="primary"
+                        variant="contained"
+                        fullWidth={false}
+                        disabled={isLoading}
+                        onClick={handleSubmit}
+                    >Submit</Button>
 
-                <Button
-                    color="secondary"
-                    variant="contained"
-                    fullWidth={false}
-                    // disabled={isSearchButtonDisabled}
-                    onClick={handleReset}
-                >Reset</Button>
-            </div>
-            <div></div>
+                    <Button
+                        color="secondary"
+                        variant="contained"
+                        fullWidth={false}
+                        // disabled={isSearchButtonDisabled}
+                        onClick={handleReset}
+                    >Reset</Button>
+                </div>
+                <div></div>
 
-            {isLoading && <LinearProgress variant="query" />}
+                {isLoading && <LinearProgress variant="query" />}
 
-            {/*<div className={classes.errorMessage}>{errorMessages.map((errorMessage) => (<div>{errorMessage}</div>))}</div>*/}
-            <div className={classes.errorMessage}>{errorMessages.map((errorMessage) => (<SnackbarContent
-                className={classes.snackbar}
-                message={errorMessage}
-            />))}</div>
+                {/*<div className={classes.errorMessage}>{errorMessages.map((errorMessage) => (<div>{errorMessage}</div>))}</div>*/}
+                <div className={classes.errorMessage}>{errorMessages.map((errorMessage) => (<SnackbarContent
+                    className={classes.snackbar}
+                    message={errorMessage}
+                />))}</div>
 
-            {submitResponseMessage.length > 0 && <div>{submitResponseMessage}</div>}
+                {submitResponseMessage.length > 0 && <div>{submitResponseMessage}</div>}
 
 
-            {/*<Snackbar*/}
-            {/*    anchorOrigin={{*/}
-            {/*        vertical: 'bottom',*/}
-            {/*        horizontal: 'left',*/}
-            {/*    }}*/}
-            {/*    open={open}*/}
-            {/*    autoHideDuration={6000}*/}
-            {/*    onClose={handleClose}*/}
-            {/*>*/}
-            {/*    <MySnackbarContentWrapper*/}
-            {/*        onClose={handleClose}*/}
-            {/*        variant="success"*/}
-            {/*        message="This is a success message!"*/}
-            {/*    />*/}
-            {/*</Snackbar>*/}
+                {/*<Snackbar*/}
+                {/*    anchorOrigin={{*/}
+                {/*        vertical: 'bottom',*/}
+                {/*        horizontal: 'left',*/}
+                {/*    }}*/}
+                {/*    open={open}*/}
+                {/*    autoHideDuration={6000}*/}
+                {/*    onClose={handleClose}*/}
+                {/*>*/}
+                {/*    <MySnackbarContentWrapper*/}
+                {/*        onClose={handleClose}*/}
+                {/*        variant="success"*/}
+                {/*        message="This is a success message!"*/}
+                {/*    />*/}
+                {/*</Snackbar>*/}
 
+            </div>
         </div>
     );
 }

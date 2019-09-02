@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { makeStyles } from '@material-ui/styles';
-import { Button, Checkbox, CircularProgress, FormControl, FormControlLabel, FormLabel, InputLabel, LinearProgress,
+import { AppBar, Button, Checkbox, CircularProgress, FormControl, FormControlLabel, FormLabel, IconButton, InputLabel, LinearProgress,
         MenuItem, Paper, Radio, RadioGroup, Select, SnackbarContent, Table, TableBody, TableCell, TableHead,
-        TableRow, TableFooter, TablePagination, TextField } from '@material-ui/core';
+        TableRow, TableFooter, TablePagination, TextField, Toolbar, Typography } from '@material-ui/core';
+
+import MenuIcon from '@material-ui/icons/Menu';
 
 import AccessAlarmIcon from '@material-ui/icons/AccessAlarm';
 import axios from 'axios';
@@ -10,49 +12,31 @@ import _ from 'lodash';
 
 const useStyles = makeStyles({
     container: {
+        display: 'grid',
+        gridTemplateColumns: '1fr 1fr 1fr',
+        // gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+
+        gridRowGap: '15px',
+
         // display: 'flex',
         // justifyContent: 'center',
         // alignItems: 'center',
         //   flexWrap: 'wrap',
+
         margin: '2rem',
 
         // border: '2px solid blue'
     },
-    section: {
-        display: 'flex',
-
-        // justifyContent: 'space-around',
-        // justifyContent: 'space-evenly',
-        // alignContent: 'start',
-        // alignItems: 'center',
-        // paddingRight: '100px',
-        // marginBottom: '1.5rem',
-        // borderBottom: '2px solid whitesmoke'
-
-        // border: '2px solid red'
-
-
-    },
-    templateType: {
-        paddingTop: '35px',
-        paddingRight: '50px',
-
-        // display: 'flex',
-        // alignItems: 'center',
-        // display: 'inline-block',
-        //   marginLeft: theme.spacing(1),
-        //   marginRight: theme.spacing(1),
-        //    width: '300px'
-
-        // border: '2px solid black'
-    },
     displayError: {
         color: 'red',
-        margin: '30px 50px'
+        // margin: '30px 50px'
     },
     divider: {
         marginTop: '1.5rem',
         borderBottom: '2px solid whitesmoke'
+    },
+    searchResults: {
+        margin: '1.5rem'
     }
 });
 
@@ -163,7 +147,7 @@ function TemplateSearch() {
                 createData(2434, 'System', 'Acupuncture', 'Kareo', '1.0', null, '2018-01-01', '2018-01-01'),
                 createData(2564, 'User', 'Diabetes', 'Dr. House', '1.0', 'house@practice.com', '2018-01-01', '2018-02-01')
             ]);
-        }, 2600);
+        }, 1600);
 
 
         // INPUT VALIDATION
@@ -253,15 +237,24 @@ function TemplateSearch() {
     };
 
     return (
-        <div className={classes.container}>
-            {/* <AccessAlarmIcon></AccessAlarmIcon> */}
-            {/* <Button color="default" variant="text" fullWidth={false}>Hello World</Button> */}
+        <div>
+            <div>
+                <AppBar position="static">
+                    <Toolbar>
+                        {/*<IconButton edge="start" className={classes.menuButton} color="inherit" aria-label="menu">*/}
+                        {/*    <MenuIcon />*/}
+                        {/*</IconButton>*/}
+                        <Typography variant="h5" className={classes.title}>
+                            Search Templates
+                        </Typography>
+                        {/*<Button color="inherit">Login</Button>*/}
+                    </Toolbar>
+                </AppBar>
+            </div>
 
-            <h2>Search Templates</h2>
-            <div className={classes.section}>
-
-                <div className={classes.templateType}>
-                    <FormControl>
+            <div className={classes.container}>
+                <div>
+                    <FormControl style={{marginTop: '1.5rem'}}>
                         <FormLabel>Template Type</FormLabel>
                         <RadioGroup name="type" value={type} onChange={handleInputValueChange}>
                             <FormControlLabel
@@ -281,66 +274,71 @@ function TemplateSearch() {
                                 labelPlacement="end" />
                         </RadioGroup>
                     </FormControl>
+                    <TextField
+                           label="Username"
+                           helperText="Not applicable for System Templates"
+                           value={username}
+                           name="username"
+                           onChange={handleInputValueChange}
+                           margin="normal"
+                           disabled={isUsernameFieldDisabled}
+                    />
                 </div>
                 <div>
-                    <TextField style={{display: 'block'}}
-                        // className={classes.textField}
-                               label="Title"
-                               value={title}
-                               name="title"
-                               onChange={handleInputValueChange}
-                               margin="normal"
+                    <TextField style={{marginTop: 0}}
+                           label="Title"
+                           value={title}
+                           name="title"
+                           onChange={handleInputValueChange}
+                           margin="normal"
                     />
                     <FormControlLabel style={{display: 'block'}}
-                                      control={
-                                          <Checkbox
-                                              color="primary"
-                                              checked={isPartialTitleMatch}
-                                              name="isPartialTitleMatch"
-                                              onChange={handleInputValueChange} />
-                                      }
-                                      label="Find Partial Title Matches"
+                          control={
+                              <Checkbox
+                                  color="primary"
+                                  checked={isPartialTitleMatch}
+                                  name="isPartialTitleMatch"
+                                  onChange={handleInputValueChange} />
+                          }
+                          label="Find Partial Title Matches"
                     />
                     <TextField style={{display: 'block'}}
-                        // className={classes.textField}
-                               label="Author"
-                               value={author}
-                               name="author"
-                               onChange={handleInputValueChange}
-                               margin="normal"
+                           label="Author"
+                           value={author}
+                           name="author"
+                           onChange={handleInputValueChange}
+                           margin="normal"
                     />
                     <TextField style={{display: 'block'}}
-                        // className={classes.textField}
-                               label="Version"
-                               value={version}
-                               name="version"
-                               onChange={handleInputValueChange}
-                               margin="normal"
-                    />
-                    <TextField style={{display: 'block'}}
-                        // className={classes.textField}
-                               label="Username"
-                               value={username}
-                               name="username"
-                               onChange={handleInputValueChange}
-                               margin="normal"
-                               disabled={isUsernameFieldDisabled}
+                           label="Version"
+                           value={version}
+                           name="version"
+                           onChange={handleInputValueChange}
+                           margin="normal"
                     />
                 </div>
+                <div/>
+
+                <div>
+                    <Button style={{marginTop: '30px'}}
+                            color="primary"
+                            variant="contained"
+                            fullWidth={false}
+                            disabled={isSearchButtonDisabled}
+                            onClick={handleSearchSubmit}
+                    >Search</Button>
+                </div>
+                <div/>
+                <div/>
+
                 {errorMessage.length > 0 &&
                 <div className={classes.displayError}>
-                    ERROR: {errorMessage}
+                    <SnackbarContent
+                        className={classes.snackbar}
+                        message={errorMessage}
+                    />
                 </div>
                 }
-            </div>
-            <div>
-                <Button style={{display: 'block'}}
-                        color="primary"
-                        variant="contained"
-                        fullWidth={false}
-                        disabled={isSearchButtonDisabled}
-                        onClick={handleSearchSubmit}
-                >Search</Button>
             </div>
 
             <div className={classes.divider}></div>
@@ -349,9 +347,9 @@ function TemplateSearch() {
             {isSearchButtonDisabled && <LinearProgress variant="query" />}
 
             {!isSearchButtonDisabled && searchResults.length > 0 &&
-            <div>
+            <div className={classes.searchResults}>
                 <h2>Search Results</h2>
-                <div className={classes.section}>
+                <div>
                     <Paper>
                         <div>
                             <Table>
