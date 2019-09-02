@@ -41,6 +41,7 @@ services:
       - kareo-template-util-backend
     environment:
       - SERVER_PORT=${SERVICE_SERVER_PORT}
+      - API_VERSION=${SERVICE_API_VERSION}
       - ORACLE_DB_JDBC_URL=${ORACLE_DB_JDBC_URL}
       - ORACLE_DB_USERNAME=${ORACLE_DB_USERNAME}
       - ORACLE_DB_PASSWORD=${ORACLE_DB_PASSWORD}
@@ -62,8 +63,8 @@ services:
       - POSTGRES_USER=${POSTGRES_DB_USERNAME}     # if not provided, 'postgres' will be used
       - POSTGRES_PASSWORD=${POSTGRES_DB_PASSWORD}
       - POSTGRES_DB=${POSTGRES_DB_NAME}       # if not provided, it'll be the same as postgres username
-    volumes:  # temporary. might really need to create a 3rd repo for docker-compose.yml and postgres, nginx configs, etc. ex) kareo-template-util-docker-compose
-      - '~/my-projects/microservices-projects/kareo-template-util/pgdata:/var/lib/postgresql/data'
+    # volumes:  # temporary. might really need to create a 3rd repo for docker-compose.yml and postgres, nginx configs, etc. ex) kareo-template-util-docker-compose
+    #   - '~/my-projects/microservices-projects/kareo-template-util/pgdata:/var/lib/postgresql/data'
     networks:
       - kareo-template-util-backend
 

@@ -28,6 +28,9 @@ HELP.md
 ### VS Code ###
 .vscode/
 
+### postgres data ###
+pgdata/
+
 ### Other ###
 *.log
 my-server-log*
