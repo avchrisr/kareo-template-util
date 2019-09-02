@@ -1,0 +1,88 @@
+version: '3.7'
+
+services:
+
+  kareo-template-util-ui:
+    container_name: kareo-template-util-ui
+    image: kareo-template-util-ui:dev
+    # build:
+    #   context: .
+    #   dockerfile: Dockerfile
+    volumes:
+      - '.:/app'
+      - '/app/node_modules'
+    # ports:        # not exposing UI port directly, as NGINX will re-direct you to it
+      # - '3002:3000'
+    networks:
+      - kareo-template-util-frontend
+    # links:
+    #   - kareo-template-util-service
+    environment:
+      - REACT_APP_MY_CUSTOM_ENV_VAR1=my-custom-env-var1
+      - REACT_APP_NGINX_HOSTNAME=${NGINX_HOSTNAME}
+      - REACT_APP_NGINX_PORT=${NGINX_PORT}
+
+  kareo-template-util-service:
+    # -- if you want to scale, each instance must have a unique container name so cannot specify a container name
+    # -- if container name is not specified, the container name pattern will be [project_name]_[service_name]_[count#]
+    # container_name: kareo-template-util-service
+    image: kareo-template-util-service:dev
+    # ports:
+    #   - 19090:9090
+    # expose:   # even if it's not exposed, it's still reachable via 9090. is it because of the network?
+      # - 9090
+    networks:
+      - kareo-template-util-frontend
+      - kareo-template-util-backend
+    environment:
+      - SERVER_PORT=${SERVICE_SERVER_PORT}
+      - ORACLE_DB_JDBC_URL=${ORACLE_DB_JDBC_URL}
+      - ORACLE_DB_USERNAME=${ORACLE_DB_USERNAME}
+      - ORACLE_DB_PASSWORD=${ORACLE_DB_PASSWORD}
+      - POSTGRES_DB_JDBC_URL=${POSTGRES_DB_JDBC_URL}
+      - POSTGRES_DB_USERNAME=${POSTGRES_DB_USERNAME}
+      - POSTGRES_DB_PASSWORD=${POSTGRES_DB_PASSWORD}
+
+  postgres:
+    container_name: kareo-template-util-postgres
+    image: postgres:11   # postgres:11-alpine
+    # restart: always      # restart whenever changes are made in docker-compose.yml. 'no' is default
+    ports:
+      - 15432:5432       # for DEV purpose only
+    # expose:              # Q) might not be needed like the -service container?
+    #  - 5432
+    environment:
+      - POSTGRES_USER=${POSTGRES_DB_USERNAME}     # if not provided, 'postgres' will be used
+      - POSTGRES_PASSWORD=${POSTGRES_DB_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB_NAME}       # if not provided, it'll be the same as postgres username
+    volumes:  # temporary. might really need to create a 3rd repo for docker-compose.yml and postgres, nginx configs, etc. ex) kareo-template-util-docker-compose
+      - '/Users/chrisr/MyProjects/react-projects/lottery/pgdata:/var/lib/postgresql/data'
+    networks:
+      - kareo-template-util-backend
+
+  nginx:
+    container_name: kareo-template-util-nginx
+    image: nginx:alpine
+    ports:                # FE requests should go to NGINX. e.g) localhost:3001, which will then be re-routed. this is REVERSE-PROXY
+      - ${NGINX_PORT}:80
+    volumes:
+      - './public:/srv/www/static'
+      - './conf/nginx/nginx.conf:/etc/nginx/nginx.conf'             # where http configs are done, including load balancing
+      - './conf/nginx/default.conf:/etc/nginx/conf.d/default.conf'  # where reverse proxy configs are done
+    networks:
+      - kareo-template-util-frontend
+    depends_on:
+      - kareo-template-util-ui
+      - kareo-template-util-service
+
+networks:
+  kareo-template-util-frontend:
+    driver: bridge
+  kareo-template-util-backend:
+    driver: bridge
+
+# -- using the pre-created external network --
+# networks:
+#   template_util_network:
+#     external:
+#       name: template_util_network
