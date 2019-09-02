@@ -57,25 +57,28 @@ public class TemplateRepository {
     public List<Template> searchForTemplates(String title, String type, String username) {
 
         MapSqlParameterSource params = new MapSqlParameterSource();
-        String baseQuery = "SELECT TEMPLATES_ID, TITLE, AUTHOR, VERSION, CREATE_DT, LAST_MOD_DT FROM HEALTHCARE.TEMPLATES WHERE IS_DELETED = 0 AND IS_PUBLISHED = 1 ";
+        String baseQuery = "SELECT TEMPLATES_ID, TITLE, AUTHOR, VERSION, CREATE_DT, LAST_MOD_DT FROM HEALTHCARE.TEMPLATES WHERE IS_DELETED = 0 AND IS_PUBLISHED = 1";
         StringBuilder stringBuilder = new StringBuilder(baseQuery);
 
         if (title != null && !title.isBlank()) {
             params.addValue("title", "%" + title.strip().toUpperCase() + "%");
-            stringBuilder.append("AND UPPER(TRIM(TITLE)) LIKE :title");
+            stringBuilder.append(" AND UPPER(TRIM(TITLE)) LIKE :title");
         }
 
         if (type != null && !type.isBlank()) {
             Integer templateTypeId = getTemplateTypeId(TemplateType.valueOf(type.strip().toUpperCase()));
             params.addValue("templateTypeId", templateTypeId);
-            stringBuilder.append("AND TEMPLATE_TYPE_ID = :templateTypeId ");
+            stringBuilder.append(" AND TEMPLATE_TYPE_ID = :templateTypeId");
         }
 
         if (username != null && !username.isBlank()) {
             Long userId = getUserId(username);
             params.addValue("userId", userId);
-            stringBuilder.append("AND USER_ID = :userId");
+            stringBuilder.append(" AND USER_ID = :userId");
         }
+
+        // TODO: implement pagination offset
+        stringBuilder.append(" AND ROWNUM <= 100 ORDER BY TITLE ASC");
 
         return oracleNamedParameterJdbcTemplate.query(stringBuilder.toString(), params, TEMPLATE_ROW_MAPPER);
     }
@@ -201,7 +204,7 @@ public class TemplateRepository {
         return oracleNamedParameterJdbcTemplate.queryForObject(query, params, Long.class);
     }
 
-    public boolean insertTemplate(Long templateId, Template template, Long userId, Integer templateTypeId) {
+    public void insertTemplate(Long templateId, Template template, Long userId, Integer templateTypeId) {
 
         MapSqlParameterSource params = new MapSqlParameterSource();
         params.addValue("templateId", templateId);
@@ -211,12 +214,10 @@ public class TemplateRepository {
         params.addValue("userId", userId);
         params.addValue("templateTypeId", templateTypeId);
 
-        int status = oracleNamedParameterJdbcTemplate.update(INSERT_TEMPLATE_QUERY, params);
-
-        return true;
+        oracleNamedParameterJdbcTemplate.update(INSERT_TEMPLATE_QUERY, params);
     }
 
-    public boolean insertTemplateSection(long templateId, TemplateSection templateSection) {
+    public void insertTemplateSection(long templateId, TemplateSection templateSection) {
 
         long newTemplateSectionId = getNextSequence(OracleTableName.TEMPLATE_SECTIONS);
         MapSqlParameterSource params = new MapSqlParameterSource();
@@ -226,12 +227,10 @@ public class TemplateRepository {
         params.addValue("inherit", templateSection.getInherit());
         params.addValue("key", templateSection.getKey());
 
-        int status = oracleNamedParameterJdbcTemplate.update(INSERT_TEMPLATE_SECTION_QUERY, params);
-
-        return true;
+        oracleNamedParameterJdbcTemplate.update(INSERT_TEMPLATE_SECTION_QUERY, params);
     }
 
-    public boolean insertTemplateCarePlan(long templateId, TemplateCarePlan templateCarePlan) {
+    public void insertTemplateCarePlan(long templateId, TemplateCarePlan templateCarePlan) {
 
         long newTemplateCarePlanId = getNextSequence(OracleTableName.TEMPLATE_CAREPLANS);
         MapSqlParameterSource params = new MapSqlParameterSource();
@@ -241,12 +240,10 @@ public class TemplateRepository {
         params.addValue("inherit", templateCarePlan.getInherit());
         params.addValue("key", templateCarePlan.getKey());
 
-        int status = oracleNamedParameterJdbcTemplate.update(INSERT_TEMPLATE_CAREPLAN_QUERY, params);
-
-        return true;
+        oracleNamedParameterJdbcTemplate.update(INSERT_TEMPLATE_CAREPLAN_QUERY, params);
     }
 
-    public boolean insertTemplateSpecialty(long templateId, TemplateSpecialty templateSpecialty) {
+    public void insertTemplateSpecialty(long templateId, TemplateSpecialty templateSpecialty) {
 
         long newTemplateSpecialtyId = getNextSequence(OracleTableName.TEMPLATE_SPECIALTIES);
         MapSqlParameterSource params = new MapSqlParameterSource();
@@ -254,12 +251,10 @@ public class TemplateRepository {
         params.addValue("templateId", templateId);
         params.addValue("description", templateSpecialty.getDescription());
 
-        int status = oracleNamedParameterJdbcTemplate.update(INSERT_TEMPLATE_SPECIALTY_QUERY, params);
-
-        return true;
+        oracleNamedParameterJdbcTemplate.update(INSERT_TEMPLATE_SPECIALTY_QUERY, params);
     }
 
-    public boolean updateTemplateMetadata(Template existingTemplate, UpdateTemplateMetadataRequest updateTemplateMetadataRequest) {
+    public void updateTemplateMetadata(Template existingTemplate, UpdateTemplateMetadataRequest updateTemplateMetadataRequest) {
 
         MapSqlParameterSource params = new MapSqlParameterSource();
         params.addValue("templateId", updateTemplateMetadataRequest.getExistingTemplateId());
@@ -282,21 +277,37 @@ public class TemplateRepository {
             params.addValue("version", existingTemplate.getVersion());
         }
 
-        int status = oracleNamedParameterJdbcTemplate.update(UPDATE_TEMPLATE_METADATA_QUERY, params);
-
-        return true;
+        oracleNamedParameterJdbcTemplate.update(UPDATE_TEMPLATE_METADATA_QUERY, params);
     }
 
-    public boolean insertRequest(PostgresTableName postgresTableName, String request) {
+    public void deleteTemplate(long templateId) {
+        // does soft-delete
+
+        MapSqlParameterSource params = new MapSqlParameterSource();
+        params.addValue("templateId", templateId);
+
+        oracleNamedParameterJdbcTemplate.update(DELETE_TEMPLATE_QUERY, params);
+        oracleNamedParameterJdbcTemplate.update(DELETE_TEMPLATE_SPECIALTY_QUERY, params);
+        oracleNamedParameterJdbcTemplate.update(DELETE_TEMPLATE_SECTION_QUERY, params);
+        oracleNamedParameterJdbcTemplate.update(DELETE_TEMPLATE_CAREPLAN_QUERY, params);
+    }
+
+    public void replaceUserDeactivatedTemplateId(long oldTemplateId, long newTemplateId) {
+        MapSqlParameterSource params = new MapSqlParameterSource();
+        params.addValue("oldTemplateId", oldTemplateId);
+        params.addValue("newTemplateId", newTemplateId);
+
+        oracleNamedParameterJdbcTemplate.update(UPDATE_USER_DEACTIVATED_TEMPLATE_QUERY, params);
+    }
+
+    public void insertRequest(PostgresTableName postgresTableName, String request) {
         MapSqlParameterSource params = new MapSqlParameterSource();
         params.addValue("request", request);
 
         // Not vulnerable to SQL Injection here because tableName comes from internally
         String query = "INSERT INTO " + postgresTableName.getName() + " (data) VALUES (:request::jsonb)";
 
-        int status = postgresNamedParameterJdbcTemplate.update(query, params);
-
-        return true;
+        postgresNamedParameterJdbcTemplate.update(query, params);
     }
 
     public Long getNextPostgresSequence() {
@@ -376,4 +387,10 @@ public class TemplateRepository {
             "INSERT INTO HEALTHCARE.TEMPLATE_CAREPLANS (TEMPLATE_CAREPLANS_ID, TEMPLATES_ID, CAREPLAN_METADATA, INHERIT, KEY, CREATE_DT, LAST_MOD_DT, IS_DELETED) VALUES " +
                     "(:id, :templateId, :carePlanMetaData, :inherit, :key, SYSDATE, SYSDATE, 0)";
 
+    private static final String DELETE_TEMPLATE_QUERY = "UPDATE HEALTHCARE.TEMPLATES SET LAST_MOD_DT = SYSDATE, IS_DELETED = 1 WHERE TEMPLATES_ID = :templateId";
+    private static final String DELETE_TEMPLATE_SPECIALTY_QUERY = "UPDATE HEALTHCARE.TEMPLATE_SPECIALTIES SET LAST_MOD_DT = SYSDATE, IS_DELETED = 1 WHERE TEMPLATES_ID = :templateId";
+    private static final String DELETE_TEMPLATE_SECTION_QUERY = "UPDATE HEALTHCARE.TEMPLATE_SECTIONS SET LAST_MOD_DT = SYSDATE, IS_DELETED = 1 WHERE TEMPLATES_ID = :templateId";
+    private static final String DELETE_TEMPLATE_CAREPLAN_QUERY = "UPDATE HEALTHCARE.TEMPLATE_CAREPLANS SET LAST_MOD_DT = SYSDATE, IS_DELETED = 1 WHERE TEMPLATES_ID = :templateId";
+
+    private static final String UPDATE_USER_DEACTIVATED_TEMPLATE_QUERY = "UPDATE HEALTHCARE.USER_DEACTIVATED_TEMPLATES SET TEMPLATES_ID = :newTemplateId WHERE TEMPLATES_ID = :oldTemplateId";
 }

@@ -156,9 +156,23 @@ public class TemplateRestControllerImpl implements TemplateRestController {
             return ResponseEntity.ok().body(new ApiResponse(true, totalCount + " System template(s) have been successfully copied to user (" + copyTemplatesRequest.getToUsername() + ")"));
 
         } else if ("USER".equalsIgnoreCase(fromType) && "SYSTEM".equalsIgnoreCase(toType)) {
+            if (!copyTemplatesRequest.isCreateNewSystemTemplate()) {
+                if (copyTemplatesRequest.getSystemTemplateIdToReplace() < 1) {
+                    throw new BadRequestException("When replacing an existing System template, 'System Template ID to Replace' is required.");
+                }
+                if (copyTemplatesRequest.getTemplateIds().length > 1) {
+                    throw new BadRequestException("When replacing an existing System template, only one User Template ID is allowed to copy over.");
+                }
 
-            // TODO: implement systemTemplateIdToReplace | createNewSystemTemplate use-case
+                // verify that the system template id to replace exists
+                long[] templateIds = { copyTemplatesRequest.getSystemTemplateIdToReplace() };
+                Integer templateCount = templateService.getTemplateCount(toType, null, templateIds);
 
+                if (templateCount != templateIds.length) {
+                    String errorMessage = String.format("System Template ID to Replace (%s) not found in database.", copyTemplatesRequest.getSystemTemplateIdToReplace());
+                    throw new BadRequestException(errorMessage);
+                }
+            }
 
             Long fromUserId = templateService.getUserId(copyTemplatesRequest.getFromUsername());
             System.out.println("fromUserId = " + fromUserId);
@@ -176,7 +190,11 @@ public class TemplateRestControllerImpl implements TemplateRestController {
             System.out.println(templates.toString());
 
             for (Template template : templates) {
-                templateService.copyTemplate(template, TemplateType.SYSTEM, toUserId);
+                if (copyTemplatesRequest.isCreateNewSystemTemplate()) {
+                    templateService.copyTemplate(template, TemplateType.SYSTEM, toUserId);
+                } else {
+                    templateService.replaceTemplate(copyTemplatesRequest.getSystemTemplateIdToReplace(), template, TemplateType.SYSTEM, toUserId);
+                }
             }
 
             templateService.storeRequest(PostgresTableName.REQUEST_HISTORY, copyTemplatesRequest);

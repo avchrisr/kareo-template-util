@@ -119,9 +119,11 @@ function TemplateCopy() {
     const handleSubmit = async (event) => {
         event.preventDefault();
 
+        let templateIdsArray;
+        let systemTemplateId;
+
         // INPUT VALIDATION
         const errorMessages = [];
-        let systemTemplateId;
 
         if (fromType === 'user' && _.isEmpty(fromUsername.trim())) {
             errorMessages.push(`"FromUsername" is required.`);
@@ -137,9 +139,7 @@ function TemplateCopy() {
         if (fromType === 'system' && toType === 'system') {
             errorMessages.push(`System templates cannot be copied to System`);
         }
-        if (_.isEmpty(templateIds.trim())) {
-            errorMessages.push(`At least one Template ID is required.`);
-        }
+
         if (createOrReplaceSystemTemplate === 'replace') {
             systemTemplateId = systemTemplateIdToReplace.trim();
 
@@ -152,8 +152,10 @@ function TemplateCopy() {
             }
         }
 
-        if (!_.isEmpty(templateIds.trim())) {
-            const templateIdsArray = templateIds.split(',');
+        if (_.isEmpty(templateIds.trim())) {
+            errorMessages.push(`At least one Template ID is required.`);
+        } else {
+            templateIdsArray = templateIds.split(',');
 
             templateIdsArray.forEach((id) => {
                 id = id.trim();
@@ -165,7 +167,7 @@ function TemplateCopy() {
             });
 
             if (templateIdsArray.length > 1 && toType === 'system' && createOrReplaceSystemTemplate === 'replace') {
-                errorMessages.push(`When copying multiple User templates to System, it must be "Create New"`);
+                errorMessages.push(`When copying multiple User templates to System, it must be "Create New System Template"`);
             }
         }
 
@@ -194,7 +196,7 @@ function TemplateCopy() {
             toType,
             fromUsername,
             toUsername,
-            templateIds,
+            templateIdsArray,
             createNewSystemTemplate: createOrReplaceSystemTemplate === 'create',
             systemTemplateIdToReplace: systemTemplateIdToReplace
         };
@@ -366,7 +368,6 @@ function TemplateCopy() {
                 </div>
                 <div>
                     <TextField
-                        // className={classes.textField}
                         label="Template IDs"
                         helperText="comma separated if multiple"
                         value={templateIds}

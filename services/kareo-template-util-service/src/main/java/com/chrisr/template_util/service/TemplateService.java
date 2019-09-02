@@ -53,7 +53,7 @@ public class TemplateService {
     }
 
     @Transactional
-    public void copyTemplate(Template template, TemplateType toTemplateType, Long toUserId) {
+    public long copyTemplate(Template template, TemplateType toTemplateType, Long toUserId) {
         // gather
         List<TemplateSection> templateSections = templateRepository.getTemplateSections(template.getId());
         System.out.println(templateSections.toString());
@@ -80,6 +80,15 @@ public class TemplateService {
         for (TemplateSpecialty templateSpecialty : templateSpecialties) {
             templateRepository.insertTemplateSpecialty(newTemplateId, templateSpecialty);
         }
+
+        return newTemplateId;
+    }
+
+    @Transactional
+    public void replaceTemplate(long templateIdToReplace, Template template, TemplateType toTemplateType, Long toUserId) {
+        long newTemplateId = copyTemplate(template, toTemplateType, toUserId);
+        templateRepository.deleteTemplate(template.getId());
+        templateRepository.replaceUserDeactivatedTemplateId(templateIdToReplace, newTemplateId);
     }
 
     @Transactional
