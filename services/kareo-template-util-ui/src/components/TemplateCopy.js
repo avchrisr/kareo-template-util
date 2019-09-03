@@ -12,6 +12,7 @@ const isOnlyNumbersRegEx = /^\d+$/;
 
 const REACT_APP_NGINX_HOSTNAME = process.env.REACT_APP_NGINX_HOSTNAME || 'localhost';
 const REACT_APP_NGINX_PORT = process.env.REACT_APP_NGINX_PORT || '3001';
+const REACT_APP_API_VERSION = process.env.REACT_APP_API_VERSION || 'v1';
 
 const useStyles = makeStyles({
     container: {
@@ -187,7 +188,7 @@ function TemplateCopy() {
 
 
 
-        const url = `http://${REACT_APP_NGINX_HOSTNAME}:${REACT_APP_NGINX_PORT}/api/v1/templates/copy-templates`;
+        const url = `http://${REACT_APP_NGINX_HOSTNAME}:${REACT_APP_NGINX_PORT}/api/${REACT_APP_API_VERSION}/templates/copy-templates`;
 
         const requestBody = {
             fromEnvironment: fromEnv,

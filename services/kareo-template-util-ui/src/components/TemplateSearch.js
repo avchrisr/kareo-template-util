@@ -10,6 +10,10 @@ import AccessAlarmIcon from '@material-ui/icons/AccessAlarm';
 import axios from 'axios';
 import _ from 'lodash';
 
+const REACT_APP_NGINX_HOSTNAME = process.env.REACT_APP_NGINX_HOSTNAME || 'localhost';
+const REACT_APP_NGINX_PORT = process.env.REACT_APP_NGINX_PORT || '3001';
+const REACT_APP_API_VERSION = process.env.REACT_APP_API_VERSION || 'v1';
+
 const useStyles = makeStyles({
     container: {
         display: 'grid',
@@ -45,7 +49,7 @@ function createData(id, type, title, author, version, username, createdOn, updat
     return { id, type, title, author, version, username, createdOn, updatedOn };
 }
 
-function TemplateSearch() {
+export default function TemplateSearch() {
     const classes = useStyles();
 
     const [type, setType] = useState('either');
@@ -114,11 +118,100 @@ function TemplateSearch() {
     const handleSearchSubmit = async (event) => {
         event.preventDefault();
 
+        // INPUT VALIDATION
+        if (_.isEmpty(title) &&
+            _.isEmpty(author) &&
+            _.isEmpty(version) &&
+            _.isEmpty(username)) {
+            setErrorMessage('At least one field is required in order to search');
+            return;
+        }
+
         // disable the button until search results comes back
         setSearchButtonDisabled(true);
 
-        setTimeout(() => {
-            setSearchButtonDisabled(false);
+        let url = `http://${REACT_APP_NGINX_HOSTNAME}:${REACT_APP_NGINX_PORT}/api/${REACT_APP_API_VERSION}/templates`;
+        let queryCount = 0;
+
+        if (title) {
+            if (queryCount === 0) {
+                url += '?';
+            } else {
+                url += '&';
+            }
+            queryCount += 1;
+            url += `title=${title}`
+        }
+        if (isPartialTitleMatch) {
+            if (queryCount === 0) {
+                url += '?';
+            } else {
+                url += '&';
+            }
+            queryCount += 1;
+            url += `find-partial-title-matches=${isPartialTitleMatch}`
+        }
+        if (author) {
+            if (queryCount === 0) {
+                url += '?';
+            } else {
+                url += '&';
+            }
+            queryCount += 1;
+            url += `author=${author}`
+        }
+        if (version) {
+            if (queryCount === 0) {
+                url += '?';
+            } else {
+                url += '&';
+            }
+            queryCount += 1;
+            url += `version=${version}`
+        }
+        if (username) {
+            if (queryCount === 0) {
+                url += '?';
+            } else {
+                url += '&';
+            }
+            queryCount += 1;
+            url += `username=${username}`
+        }
+
+        console.log(`## URL = ${url}`);
+
+
+        // TODO: implement user login and proper JWT usage
+        const jwt = 'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJjaHJpc3IiLCJpYXQiOjE1Njc1NDU3MjAsImV4cCI6MTU2ODE1MDUyMH0.ps-dOeKe4BA7hbZ7EWWfFHG-H-FQxMtRFhhaap2LIzaL_cQkbY2lXZuGdkWLgPkqw558tmZFXv_i478Jxavxgg';
+
+
+        const options = {
+            url,
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + jwt
+            },
+            // data: dataSource.buildPayload(),
+            timeout: 5000,
+            // auth: {
+            //     username: environment.username,
+            //     password: environment.password
+            // }
+        };
+
+        console.log(`URL = ${url}`);
+
+        const res = await axios(options).catch((err) => {
+            console.log(`-------------  AXIOS ERROR  ---------------`);
+            console.log(err);
+            console.log(JSON.stringify(err, null, 4));
+            console.log(`-------------  ERROR RESPONSE  ---------------`);
+            console.log(err.response);
+
+            const errorMessage = _.get(err, 'response.data.message') || _.get(err, 'message');
+            setErrorMessage(errorMessage);
 
             setSearchResults([
                 createData(1, 'System', 'Acne', 'Kareo', '1.0', null, '2018-01-01', '2018-01-01'),
@@ -147,93 +240,16 @@ function TemplateSearch() {
                 createData(2434, 'System', 'Acupuncture', 'Kareo', '1.0', null, '2018-01-01', '2018-01-01'),
                 createData(2564, 'User', 'Diabetes', 'Dr. House', '1.0', 'house@practice.com', '2018-01-01', '2018-02-01')
             ]);
-        }, 1600);
-
-
-        // INPUT VALIDATION
-        if (_.isEmpty(title) &&
-            _.isEmpty(author) &&
-            _.isEmpty(version) &&
-            _.isEmpty(username)) {
-            setErrorMessage('At least one field is required in order to search');
-            return;
-        }
-
-        /*
-
-        // disable the button until search results comes back
-        this.setState({
-            searchButtonDisabled: true,
-            searchButtonOpacity: 0.4,
-            loading: true,
-            errorMessage: ''
-        });
-
-        let url = `http://${REACT_APP_NGINX_HOSTNAME}:${REACT_APP_NGINX_PORT}/api/templates`;
-
-        if (this.state.searchValue.title) {
-            url += `?title=${this.state.searchValue.title}`
-        }
-        if (this.state.searchValue.author) {
-            url += `&author=${this.state.searchValue.author}`
-        }
-        if (this.state.searchValue.version) {
-            url += `&version=${this.state.searchValue.version}`
-        }
-        if (this.state.searchValue.username) {
-            url += `&username=${this.state.searchValue.username}`
-        }
-
-        const options = {
-            url,
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            // data: dataSource.buildPayload(),
-            timeout: 5000,
-            // auth: {
-            //     username: environment.username,
-            //     password: environment.password
-            // }
-        };
-
-        console.log(`URL = ${url}`);
-
-        const res = await axios(options).catch((err) => {
-            console.log(`-------------  AXIOS ERROR  ---------------`);
-            console.log(err);
-            console.log(JSON.stringify(err, null, 4));
-            console.log(`-------------  ERROR RESPONSE  ---------------`);
-            console.log(err.response);
-
-            const errorMessage = _.get(err, 'response.data.message') || _.get(err, 'message');
-
-            this.setState({
-                searchButtonDisabled: false,
-                searchButtonOpacity: 1.0,
-                loading: false,
-                errorMessage
-            });
         });
 
         if (res) {
             console.log(`-------------  res.data  ---------------`);
             console.log(JSON.stringify(res.data, null, 4));
 
-            this.setState({
-                searchResults: res.data
-            });
-
-            // enable search button
-            this.setState({
-                searchButtonDisabled: false,
-                searchButtonOpacity: 1.0,
-                loading: false,
-                errorMessage: ''
-            });
+            setSearchResults(res.data);
         }
-        */
+
+        setSearchButtonDisabled(false);
     };
 
     return (
@@ -413,5 +429,3 @@ function TemplateSearch() {
         </div>
     );
 }
-
-export default TemplateSearch;

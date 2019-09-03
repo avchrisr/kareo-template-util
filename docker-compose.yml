@@ -21,6 +21,7 @@ services:
       - REACT_APP_MY_CUSTOM_ENV_VAR1=my-custom-env-var1
       - REACT_APP_NGINX_HOSTNAME=${NGINX_HOSTNAME}
       - REACT_APP_NGINX_PORT=${NGINX_PORT}
+      - REACT_APP_API_VERSION=${SERVICE_API_VERSION}
 
   kareo-template-util-service:
     # -- if you want to scale, each instance must have a unique container name so cannot specify a container name
@@ -32,8 +33,8 @@ services:
       dockerfile: Dockerfile-kareo-template-util-service
       args:
         - JAR_FILE=target/kareo-template-util-service-0.0.1-SNAPSHOT.jar
-    # ports:
-    #   - 19090:9090
+    ports:              # for DEV purpose only. ensure that only one instance of this service is running, because multiple instances cannot be mapped to a single local port
+      - 19090:9090
     # expose:   # even if it's not exposed, it's still reachable via 9090. is it because of the network?
       # - 9090
     networks:

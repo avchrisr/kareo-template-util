@@ -43,18 +43,18 @@ public class TemplateRestControllerImpl implements TemplateRestController {
         this.templateService = templateService;
     }
 
-
     // TODO: add paging to search results
 
-    // TODO: add "author" to the query
-
     @Override
-    public ResponseEntity<List<Template>> searchForTemplates(@RequestParam(required = false) String title,
-                                                             @RequestParam(required = false) String type,
-                                                             @RequestParam(required = false) String username) {
+    public ResponseEntity<List<Template>> searchForTemplates(String title, String findPartialTitleMatches, String type, String author, String version, String username) {
 
-        if ((title == null || title.isBlank()) && (type == null || type.isBlank()) && (username == null || username.isBlank())) {
-            String errorMessage = "At least one of the following query parameters is required: 'title', 'type', or 'username'   (ex) /api/templates?title=MedSpa&type=SYSTEM";
+        if ((title == null || title.isBlank()) &&
+                (type == null || type.isBlank()) &&
+                (author == null || author.isBlank()) &&
+                (version == null || version.isBlank()) &&
+                (username == null || username.isBlank())) {
+            String errorMessage = "At least one of the following query parameters is required: 'title', 'find-partial-title-matches', " +
+                    "'type', 'author', 'version', or 'username'  (ex) /api/v1/templates?title=MedSpa&find-partial-title-matches=true&type=SYSTEM";
             throw new BadRequestException(errorMessage);
         }
 
@@ -73,13 +73,26 @@ public class TemplateRestControllerImpl implements TemplateRestController {
             throw new BadRequestException(errorMessage);
         }
 
+        if (findPartialTitleMatches != null && !findPartialTitleMatches.isBlank() && !("true".equalsIgnoreCase(findPartialTitleMatches) || "false".equalsIgnoreCase(findPartialTitleMatches))) {
+            String errorMessage = String.format("'true' or 'false' is the only valid value for 'findPartialTitleMatches' parameter, but following invalid value was received = %s", findPartialTitleMatches);
+            throw new BadRequestException(errorMessage);
+        }
+
+        if ((title == null || title.isBlank()) && (findPartialTitleMatches != null && !findPartialTitleMatches.isBlank())) {
+            String errorMessage = "Title must be provided if 'findPartialTitleMatches' option is provided.";
+            throw new BadRequestException(errorMessage);
+        }
+
         // TODO: wrap results in a response object, which includes "totalCount", "count", "pageSize", "page"
 
-        List<Template> results = templateService.searchForTemplates(title, type, username);
+        List<Template> results = templateService.searchForTemplates(title, findPartialTitleMatches, type, author, version, username);
 
         SearchForTemplateRequest searchForTemplateRequest = new SearchForTemplateRequest();
         searchForTemplateRequest.setTitle(title);
+        searchForTemplateRequest.setFindPartialTitleMatches(findPartialTitleMatches);
         searchForTemplateRequest.setType(type);
+        searchForTemplateRequest.setAuthor(author);
+        searchForTemplateRequest.setVersion(version);
         searchForTemplateRequest.setUsername(username);
 
         templateService.storeRequest(PostgresTableName.REQUEST_HISTORY, searchForTemplateRequest);

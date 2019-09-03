@@ -27,7 +27,7 @@ consists of following dockerized components:
 
 
 ### Register User
-`POST http://localhost:3001/auth/register`
+`POST http://localhost:3001/api/v1/auth/register`
 ```
 {
 	"username": "user1",
@@ -39,7 +39,7 @@ consists of following dockerized components:
 ```
 
 ### Login
-`http://localhost:3001/auth/login`
+`http://localhost:3001/api/v1/auth/login`
 ```
 {
 	"username": "user1",
@@ -48,6 +48,14 @@ consists of following dockerized components:
 ```
 
 ### Get Users
-`http://localhost:3001/users/`
+`http://localhost:3001/api/v1/users/`
 
-`http://localhost:3001/users/1`
+`http://localhost:3001/api/v1/users/1`
+
+
+### Search for Templates
+`http://localhost:3001/api/v1/templates?title=acne`
+
+`http://localhost:3001/api/v1/templates?title=acne&find-partial-title-matches=true`
+
+`http://localhost:3001/api/v1/templates?username=provider1@kareo.com&title=medspa`

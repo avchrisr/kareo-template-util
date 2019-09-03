@@ -38,8 +38,8 @@ public class TemplateService {
     }
 
     @Transactional(readOnly = true)
-    public List<Template> searchForTemplates(String title, String type, String username) {
-        return templateRepository.searchForTemplates(title, type, username);
+    public List<Template> searchForTemplates(String title, String findPartialTitleMatches, String type, String author, String version, String username) {
+        return templateRepository.searchForTemplates(title, findPartialTitleMatches, type, author, version, username);
     }
 
     @Transactional(readOnly = true)

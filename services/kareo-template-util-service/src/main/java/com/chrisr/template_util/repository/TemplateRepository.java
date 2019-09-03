@@ -54,14 +54,18 @@ public class TemplateRepository {
         return userId;
     }
 
-    public List<Template> searchForTemplates(String title, String type, String username) {
+    public List<Template> searchForTemplates(String title, String findPartialTitleMatches, String type, String author, String version, String username) {
 
         MapSqlParameterSource params = new MapSqlParameterSource();
         String baseQuery = "SELECT TEMPLATES_ID, TITLE, AUTHOR, VERSION, CREATE_DT, LAST_MOD_DT FROM HEALTHCARE.TEMPLATES WHERE IS_DELETED = 0 AND IS_PUBLISHED = 1";
         StringBuilder stringBuilder = new StringBuilder(baseQuery);
 
         if (title != null && !title.isBlank()) {
-            params.addValue("title", "%" + title.strip().toUpperCase() + "%");
+            if ("true".equalsIgnoreCase(findPartialTitleMatches)) {
+                params.addValue("title", "%" + title.strip().toUpperCase() + "%");
+            } else {
+                params.addValue("title", title.strip().toUpperCase());
+            }
             stringBuilder.append(" AND UPPER(TRIM(TITLE)) LIKE :title");
         }
 
@@ -69,6 +73,16 @@ public class TemplateRepository {
             Integer templateTypeId = getTemplateTypeId(TemplateType.valueOf(type.strip().toUpperCase()));
             params.addValue("templateTypeId", templateTypeId);
             stringBuilder.append(" AND TEMPLATE_TYPE_ID = :templateTypeId");
+        }
+
+        if (author != null && !author.isBlank()) {
+            params.addValue("author", author);
+            stringBuilder.append(" AND AUTHOR = :author");
+        }
+
+        if (version != null && !version.isBlank()) {
+            params.addValue("version", version);
+            stringBuilder.append(" AND VERSION = :version");
         }
 
         if (username != null && !username.isBlank()) {

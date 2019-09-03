@@ -26,27 +26,37 @@ public class TemplateRestControllerImplTest {
 
     @Test(expected = BadRequestException.class)
     public void searchForTemplates_NoParams_ShouldThrowBadRequestException() {
-        templateRestController.searchForTemplates("", "", "");
+        templateRestController.searchForTemplates("", "", "", "", "", "");
     }
 
     @Test(expected = BadRequestException.class)
     public void searchForTemplates_SystemTypeWithUsername_ShouldThrowBadRequestException() {
-        templateRestController.searchForTemplates("", "SYSTEM", "amy@kareo.com");
+        templateRestController.searchForTemplates("", "","SYSTEM", "", "","amy@kareo.com");
     }
 
     @Test(expected = BadRequestException.class)
     public void searchForTemplates_UserTypeWithoutUsername_ShouldThrowBadRequestException() {
-        templateRestController.searchForTemplates("", "USER", "");
+        templateRestController.searchForTemplates("", "", "USER", "", "", "");
     }
 
     @Test(expected = BadRequestException.class)
     public void searchForTemplates_TitleWithTwoCharacters_ShouldThrowBadRequestException() {
-        templateRestController.searchForTemplates("BE", "", "");
+        templateRestController.searchForTemplates("BE", "", "", "", "", "");
+    }
+
+    @Test(expected = BadRequestException.class)
+    public void searchForTemplates_NoTitleWithPartialTitleMatchOptionOn_ShouldThrowBadRequestException() {
+        templateRestController.searchForTemplates("", "true", "", "", "", "");
+    }
+
+    @Test(expected = BadRequestException.class)
+    public void searchForTemplates_findPartialTitleMatchesOptionValueOtherThanTrueOrFalse_ShouldThrowBadRequestException() {
+        templateRestController.searchForTemplates("Acne", "invalidValue", "", "", "", "");
     }
 
     @Test
     public void searchForTemplates_ValidRequest_ShouldSucceed() {
-        templateRestController.searchForTemplates("Med Spa", "USER", "amy@kareo.com");
+        templateRestController.searchForTemplates("Med Spa", "", "USER", "", "", "amy@kareo.com");
     }
 
     @Test(expected = BadRequestException.class)
