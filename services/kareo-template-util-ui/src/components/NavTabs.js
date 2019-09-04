@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { createContext, useContext, useState } from 'react';
 import { makeStyles } from '@material-ui/styles';
 
 import { navigate, useRoutes } from 'hookrouter';
@@ -18,33 +18,71 @@ const useStyles = makeStyles({
     },
 });
 
+export const TemplateSearchContext = createContext();
+
 const routes = {
     // '/': () => <HomePage />,
     '/template-search': () => <TemplateSearch />,
     '/template-copy': () => <TemplateCopy />
 };
 
-function NavTabs() {
+const Provider = ({children}) => {
+
+    const [type, setType] = useState('either');
+    const [title, setTitle] = useState('');
+    const [author, setAuthor] = useState('');
+    const [version, setVersion] = useState('');
+    const [username, setUsername] = useState('');
+    const [isUsernameFieldDisabled, setUsernameFieldDisabled] = useState(false);
+    const [isPartialTitleMatch, setPartialTitleMatch] = useState(false);
+    const [isSearchButtonDisabled, setSearchButtonDisabled] = useState(false);
+    const [errorMessage, setErrorMessage] = useState('');
+    const [searchResults, setSearchResults] = useState([]);
+
+    const [page, setPage] = useState(0);
+    const [rowsPerPage, setRowsPerPage] = useState(5);
+
+    const value = {
+        type, setType,
+        title, setTitle,
+        author, setAuthor,
+        version, setVersion,
+        username, setUsername,
+        isUsernameFieldDisabled, setUsernameFieldDisabled,
+        isPartialTitleMatch, setPartialTitleMatch,
+        isSearchButtonDisabled, setSearchButtonDisabled,
+        errorMessage, setErrorMessage,
+        searchResults, setSearchResults,
+        page, setPage, rowsPerPage, setRowsPerPage };
+
+    return (
+        <TemplateSearchContext.Provider value={value}>
+            {children}
+        </TemplateSearchContext.Provider>
+    );
+};
+
+export default function NavTabs() {
     const routeResult = useRoutes(routes);
     const classes = useStyles();
 
     return (
-        <div>
-            <ButtonGroup
-                color="primary"
-                fullWidth
-                size="large"
-                variant="outlined"
-            >
-                <Button onClick={() => navigate('/template-search', true)}>Search Templates</Button>
-                <Button onClick={() => navigate('/template-copy', true)}>Copy Templates</Button>
-            </ButtonGroup>
+        <Provider>
+            <div>
+                <ButtonGroup
+                    color="primary"
+                    fullWidth
+                    size="large"
+                    variant="outlined"
+                >
+                    <Button onClick={() => navigate('/template-search', true)}>Search Templates</Button>
+                    <Button onClick={() => navigate('/template-copy', true)}>Copy Templates</Button>
+                </ButtonGroup>
 
-            {routeResult}
+                {routeResult}
 
-            {/*{routeResult || <NotFoundPage />}*/}
-        </div>
+                {/*{routeResult || <NotFoundPage />}*/}
+            </div>
+        </Provider>
     );
 }
-
-export default NavTabs;

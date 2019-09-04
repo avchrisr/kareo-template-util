@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import { makeStyles } from '@material-ui/styles';
 import { AppBar, Button, Checkbox, CircularProgress, FormControl, FormControlLabel, FormLabel, IconButton, InputLabel, LinearProgress,
         MenuItem, Paper, Radio, RadioGroup, Select, SnackbarContent, Table, TableBody, TableCell, TableHead,
@@ -9,6 +9,7 @@ import MenuIcon from '@material-ui/icons/Menu';
 import AccessAlarmIcon from '@material-ui/icons/AccessAlarm';
 import axios from 'axios';
 import _ from 'lodash';
+import { TemplateSearchContext } from "./NavTabs";
 
 const REACT_APP_NGINX_HOSTNAME = process.env.REACT_APP_NGINX_HOSTNAME || 'localhost';
 const REACT_APP_NGINX_PORT = process.env.REACT_APP_NGINX_PORT || '3001';
@@ -52,23 +53,20 @@ function createData(id, type, title, author, version, username, createdOn, updat
 export default function TemplateSearch() {
     const classes = useStyles();
 
-    const [type, setType] = useState('either');
-    const [title, setTitle] = useState('');
-    const [author, setAuthor] = useState('');
-    const [version, setVersion] = useState('');
-    const [username, setUsername] = useState('');
-    const [isUsernameFieldDisabled, setUsernameFieldDisabled] = useState(false);
-    const [isPartialTitleMatch, setPartialTitleMatch] = useState(false);
-    const [isSearchButtonDisabled, setSearchButtonDisabled] = useState(false);
-    const [errorMessage, setErrorMessage] = useState('');
-
-    const [searchResults, setSearchResults] = useState([]);
-
-    const [page, setPage] = React.useState(0);
-    const [rowsPerPage, setRowsPerPage] = React.useState(5);
+    const {
+        type, setType,
+        title, setTitle,
+        author, setAuthor,
+        version, setVersion,
+        username, setUsername,
+        isUsernameFieldDisabled, setUsernameFieldDisabled,
+        isPartialTitleMatch, setPartialTitleMatch,
+        isSearchButtonDisabled, setSearchButtonDisabled,
+        errorMessage, setErrorMessage,
+        searchResults, setSearchResults,
+        page, setPage, rowsPerPage, setRowsPerPage } = useContext(TemplateSearchContext);
 
     const emptyRows = rowsPerPage - Math.min(rowsPerPage, searchResults.length - page * rowsPerPage);
-
 
     const handleChangePage = (event, newPage) => {
         setPage(newPage);
@@ -223,6 +221,8 @@ export default function TemplateSearch() {
             const errorMessage = _.get(err, 'response.data.message') || _.get(err, 'message');
             setErrorMessage(errorMessage);
 
+            // TODO: below pseudo search result is for demonstrative purpose (when an error occurs). remove this pseudo data later
+
             setSearchResults([
                 createData(1, 'System', 'Acne', 'Kareo', '1.0', null, '2018-01-01', '2018-01-01'),
                 createData(223, 'User', 'MedSpa', 'Amy', '1.5', 'amy.vandenbrink@kareotest.com', '2018-01-01', '2018-01-01'),
@@ -257,6 +257,7 @@ export default function TemplateSearch() {
             console.log(JSON.stringify(res.data, null, 4));
 
             setSearchResults(res.data);
+            setPage(0);
         }
 
         setSearchButtonDisabled(false);
