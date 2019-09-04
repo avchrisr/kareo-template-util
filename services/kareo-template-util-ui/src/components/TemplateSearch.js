@@ -120,6 +120,7 @@ export default function TemplateSearch() {
 
         // INPUT VALIDATION
         if (_.isEmpty(title) &&
+            _.isEmpty(type) &&
             _.isEmpty(author) &&
             _.isEmpty(version) &&
             _.isEmpty(username)) {
@@ -150,6 +151,15 @@ export default function TemplateSearch() {
             }
             queryCount += 1;
             url += `find-partial-title-matches=${isPartialTitleMatch}`
+        }
+        if (type === 'system' || type === 'custom') {
+            if (queryCount === 0) {
+                url += '?';
+            } else {
+                url += '&';
+            }
+            queryCount += 1;
+            url += `type=${type}`
         }
         if (author) {
             if (queryCount === 0) {
@@ -424,6 +434,12 @@ export default function TemplateSearch() {
                         </div>
                     </Paper>
                 </div>
+            </div>
+            }
+
+            {!isSearchButtonDisabled && searchResults.length === 0 &&
+            <div className={classes.searchResults}>
+                <h3>No Results</h3>
             </div>
             }
         </div>

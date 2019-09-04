@@ -15,7 +15,7 @@ public interface TemplateRestController {
 
 	@GetMapping
 	ResponseEntity<List<Template>> searchForTemplates(@RequestParam(required = false) String title,
-		 @RequestParam(name = "find-partial-title-matches", required = false, defaultValue = "false") String findPartialTitleMatches,
+		 @RequestParam(name = "find-partial-title-matches", required = false) String findPartialTitleMatches,
 		 @RequestParam(required = false) String type,
 		 @RequestParam(required = false) String author,
 		 @RequestParam(required = false) String version,

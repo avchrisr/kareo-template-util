@@ -59,3 +59,20 @@ consists of following dockerized components:
 `http://localhost:3001/api/v1/templates?title=acne&find-partial-title-matches=true`
 
 `http://localhost:3001/api/v1/templates?username=provider1@kareo.com&title=medspa`
+
+-----------
+
+## TO DO
+
+* finish template-copy feature
+* pagination / offset / limit on search results
+    * change return type from List of Templates to Reponse wrapper with list of templates inside, along with other metadata such as pageNumber, resultCount, etc?
+* login/logout workflow in React app
+    * blacklist JWT tokens (via logout / password change, etc)
+    * use Redis with TTL
+        * look into other Cache options
+* add request_history page, and rollback capability?
+* integration tests
+* custom Postgres image with init script?
+
+-----------

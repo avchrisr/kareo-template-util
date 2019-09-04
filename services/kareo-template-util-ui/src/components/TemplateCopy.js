@@ -120,6 +120,7 @@ function TemplateCopy() {
     const handleSubmit = async (event) => {
         event.preventDefault();
 
+        const templateIdsToCopy = [];
         let templateIdsArray;
         let systemTemplateId;
 
@@ -164,6 +165,8 @@ function TemplateCopy() {
                     errorMessages.push(`"${id}" is not a valid template ID as it is not an integer number.`);
                 } else if (id === systemTemplateId) {
                     errorMessages.push(`Template ID being copied from, and Template ID being replaced cannot be the same.`);
+                } else {
+                    templateIdsToCopy.push(parseInt(id));
                 }
             });
 
@@ -197,16 +200,22 @@ function TemplateCopy() {
             toType,
             fromUsername,
             toUsername,
-            templateIdsArray,
+            templateIds: templateIdsToCopy,
             createNewSystemTemplate: createOrReplaceSystemTemplate === 'create',
             systemTemplateIdToReplace: systemTemplateIdToReplace
         };
+
+
+        // TODO: implement user login and proper JWT usage
+        const jwt = 'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJjaHJpc3IiLCJpYXQiOjE1Njc1NDU3MjAsImV4cCI6MTU2ODE1MDUyMH0.ps-dOeKe4BA7hbZ7EWWfFHG-H-FQxMtRFhhaap2LIzaL_cQkbY2lXZuGdkWLgPkqw558tmZFXv_i478Jxavxgg';
+
 
         const options = {
             url,
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + jwt
             },
             data: requestBody,
             timeout: 15000,
@@ -234,7 +243,7 @@ function TemplateCopy() {
             console.log(`-------------  res.data  ---------------`);
             console.log(JSON.stringify(res.data, null, 4));
 
-            setSubmitResponseMessage(res.data);
+            setSubmitResponseMessage(res.data.message);
         }
 
         setLoading(false);
@@ -429,12 +438,15 @@ function TemplateCopy() {
                 {isLoading && <LinearProgress variant="query" />}
 
                 {/*<div className={classes.errorMessage}>{errorMessages.map((errorMessage) => (<div>{errorMessage}</div>))}</div>*/}
-                <div className={classes.errorMessage}>{errorMessages.map((errorMessage) => (<SnackbarContent
+                {errorMessages.length > 0 && <div className={classes.errorMessage}>{errorMessages.map((errorMessage) => (<SnackbarContent
                     className={classes.snackbar}
                     message={errorMessage}
-                />))}</div>
+                />))}</div>}
 
-                {submitResponseMessage.length > 0 && <div>{submitResponseMessage}</div>}
+                {submitResponseMessage.length > 0 && <SnackbarContent
+                    className={classes.snackbar}
+                    message={submitResponseMessage}
+                />}
 
 
                 {/*<Snackbar*/}

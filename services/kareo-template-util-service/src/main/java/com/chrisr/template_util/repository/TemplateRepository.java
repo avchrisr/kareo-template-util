@@ -111,7 +111,7 @@ public class TemplateRepository {
             templateIds.add(id);
         }
 
-        params.addValue("templateType", templateType);
+        params.addValue("templateType", templateType.toUpperCase());
         params.addValue("templateIds", templateIds);
 
         String query =
