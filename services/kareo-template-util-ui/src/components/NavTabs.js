@@ -11,6 +11,7 @@ import PersonPinIcon from '@material-ui/icons/PersonPin';
 
 import TemplateSearch from "./TemplateSearch";
 import TemplateCopy from "./TemplateCopy";
+import {RootContext} from "../RootContext";
 
 const useStyles = makeStyles({
     container: {
@@ -66,6 +67,12 @@ export default function NavTabs() {
     const routeResult = useRoutes(routes);
     const classes = useStyles();
 
+    const { authenticated, setAuthenticated, authBody, setAuthBody } = useContext(RootContext);
+
+    const handleLogOut = (event) => {
+        setAuthenticated('false');
+    };
+
     return (
         <Provider>
             <div>
@@ -78,6 +85,8 @@ export default function NavTabs() {
                     <Button onClick={() => navigate('/template-search', true)}>Search Templates</Button>
                     <Button onClick={() => navigate('/template-copy', true)}>Copy Templates</Button>
                 </ButtonGroup>
+
+                {authenticated === 'true' && <Button onClick={handleLogOut}>Log Out</Button>}
 
                 {routeResult}
 
