@@ -36,6 +36,14 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 	private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
 	private final JwtTokenProvider jwtTokenProvider;
 
+	private static final String[] AUTH_WHITELIST_SWAGGER = {
+			// swagger
+			"/v2/api-docs",
+			"/swagger-ui.html",
+			"/swagger-resources/**",
+			"/webjars/**"
+	};
+
 	@Autowired
 	public WebSecurityConfig(UserDetailsServiceImpl userDetailsServiceImpl,
 							 JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint,
@@ -100,6 +108,10 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 						"/**/*.js").permitAll()
 				.antMatchers("/auth/**").permitAll()
 				.antMatchers("/public/**").permitAll()
+
+				// swagger2 endpoints
+				.antMatchers(AUTH_WHITELIST_SWAGGER).permitAll()
+
 //				.antMatchers("/user/checkUsernameAvailability", "/user/checkEmailAvailability").permitAll()
 //				.antMatchers(HttpMethod.GET, "/polls/**", "/users/**").permitAll()
 				.anyRequest()
