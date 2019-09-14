@@ -163,9 +163,27 @@ public class TemplateRestControllerImplTest {
     }
 
     @Test(expected = BadRequestException.class)
+    public void updateTemplateMetadata_NoCurrentTemplateIdProvided_ShouldThrowBadRequestException() {
+
+        UpdateTemplateMetadataRequest updateTemplateMetadataRequest = new UpdateTemplateMetadataRequest();
+        updateTemplateMetadataRequest.setCurrentTemplateTitle("Med Spa v1");
+        templateRestController.updateTemplateMetadata(updateTemplateMetadataRequest);
+    }
+
+    @Test(expected = BadRequestException.class)
+    public void updateTemplateMetadata_NoCurrentTemplateTitleProvided_ShouldThrowBadRequestException() {
+
+        UpdateTemplateMetadataRequest updateTemplateMetadataRequest = new UpdateTemplateMetadataRequest();
+        updateTemplateMetadataRequest.setCurrentTemplateId(100L);
+        templateRestController.updateTemplateMetadata(updateTemplateMetadataRequest);
+    }
+
+    @Test(expected = BadRequestException.class)
     public void updateTemplateMetadata_NoNewInfoProvided_ShouldThrowBadRequestException() {
 
         UpdateTemplateMetadataRequest updateTemplateMetadataRequest = new UpdateTemplateMetadataRequest();
+        updateTemplateMetadataRequest.setCurrentTemplateId(100L);
+        updateTemplateMetadataRequest.setCurrentTemplateTitle("Med Spa v1");
         templateRestController.updateTemplateMetadata(updateTemplateMetadataRequest);
     }
 
@@ -173,8 +191,9 @@ public class TemplateRestControllerImplTest {
     public void updateTemplateMetadata_ValidRequest_ShouldSucceed() {
 
         UpdateTemplateMetadataRequest updateTemplateMetadataRequest = new UpdateTemplateMetadataRequest();
-        updateTemplateMetadataRequest.setCurrentTemplateId(50L);
-        updateTemplateMetadataRequest.setNewTitle("This is new title");
+        updateTemplateMetadataRequest.setCurrentTemplateId(100L);
+        updateTemplateMetadataRequest.setCurrentTemplateTitle("Med Spa v1");
+        updateTemplateMetadataRequest.setNewTitle("Med Spa v2");
         templateRestController.updateTemplateMetadata(updateTemplateMetadataRequest);
     }
 }
