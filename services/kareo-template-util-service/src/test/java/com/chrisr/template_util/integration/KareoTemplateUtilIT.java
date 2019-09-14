@@ -45,7 +45,7 @@ public class KareoTemplateUtilIT {
         httpHeaders.setContentType(MediaType.APPLICATION_JSON);
 
         UpdateTemplateMetadataRequest updateTemplateMetadataRequest = new UpdateTemplateMetadataRequest();
-        updateTemplateMetadataRequest.setExistingTemplateId(137L);          // not existing template id
+        updateTemplateMetadataRequest.setCurrentTemplateId(137L);          // not existing template id
         updateTemplateMetadataRequest.setNewTitle("MedSpa Therapy");
         updateTemplateMetadataRequest.setNewAuthor("Chris Ro");
         updateTemplateMetadataRequest.setNewVersion("2.0");
@@ -77,7 +77,7 @@ public class KareoTemplateUtilIT {
         httpHeaders.setContentType(MediaType.APPLICATION_JSON);
 
         UpdateTemplateMetadataRequest updateTemplateMetadataRequest = new UpdateTemplateMetadataRequest();
-        updateTemplateMetadataRequest.setExistingTemplateId(137L);          // Should be existing template id
+        updateTemplateMetadataRequest.setCurrentTemplateId(137L);          // Should be existing template id
         updateTemplateMetadataRequest.setNewTitle("MedSpa Therapy");
         updateTemplateMetadataRequest.setNewAuthor("Chris Ro");
         updateTemplateMetadataRequest.setNewVersion("2.0");

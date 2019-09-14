@@ -253,6 +253,13 @@ public class TemplateRestControllerImpl implements TemplateRestController {
         System.out.println("---------------------");
         System.out.println(updateTemplateMetadataRequest.toString());
 
+        if (updateTemplateMetadataRequest.getCurrentTemplateId() < 0) {
+            throw new BadRequestException("Current Template ID is required.");
+        }
+        if (updateTemplateMetadataRequest.getCurrentTemplateTitle() == null || updateTemplateMetadataRequest.getCurrentTemplateTitle().isBlank()) {
+            throw new BadRequestException("Current Template Title is required.");
+        }
+
         if ((updateTemplateMetadataRequest.getNewTitle() == null || updateTemplateMetadataRequest.getNewTitle().isBlank()) &&
             (updateTemplateMetadataRequest.getNewAuthor() == null || updateTemplateMetadataRequest.getNewAuthor().isBlank()) &&
             (updateTemplateMetadataRequest.getNewVersion() == null || updateTemplateMetadataRequest.getNewVersion().isBlank())) {

@@ -134,6 +134,7 @@ public class TemplateRepository {
 //        namedParameters.addValue("endDate", endPeriod.toDate(), Types.DATE);
 //        namedParameters.addValue("providerIds", providerIds);
 
+        String query;
         MapSqlParameterSource params = new MapSqlParameterSource();
 
         List<Long> templateIds = new ArrayList<>();
@@ -141,13 +142,17 @@ public class TemplateRepository {
             templateIds.add(id);
         }
 
-        params.addValue("templateType", templateType.toUpperCase());
         params.addValue("templateIds", templateIds);
 
-        String query =
-                "SELECT TEMPLATES_ID, AUTHOR, VERSION, TITLE, CREATE_DT, LAST_MOD_DT " +
-                        "FROM HEALTHCARE.TEMPLATES t JOIN HEALTHCARE.TEMPLATE_TYPE tt ON t.TEMPLATE_TYPE_ID = tt.TEMPLATE_TYPE_ID " +
-                        "WHERE UPPER(tt.NAME) = :templateType AND TEMPLATES_ID IN (:templateIds)";
+        if (templateType != null) {
+            params.addValue("templateType", templateType.toUpperCase());
+            query = "SELECT TEMPLATES_ID, AUTHOR, VERSION, TITLE, CREATE_DT, LAST_MOD_DT " +
+                    "FROM HEALTHCARE.TEMPLATES t JOIN HEALTHCARE.TEMPLATE_TYPE tt ON t.TEMPLATE_TYPE_ID = tt.TEMPLATE_TYPE_ID " +
+                    "WHERE UPPER(tt.NAME) = :templateType AND TEMPLATES_ID IN (:templateIds)";
+        } else {
+            query = "SELECT TEMPLATES_ID, AUTHOR, VERSION, TITLE, CREATE_DT, LAST_MOD_DT " +
+                    "FROM HEALTHCARE.TEMPLATES t WHERE TEMPLATES_ID IN (:templateIds)";
+        }
 
         if (userId != null) {
             query += " AND USER_ID = :userId";
@@ -156,7 +161,6 @@ public class TemplateRepository {
 
         return oracleNamedParameterJdbcTemplate.query(query, params, TEMPLATE_ROW_MAPPER);
     }
-
 
     public List<TemplateSection> getTemplateSections(long templateId) {
         MapSqlParameterSource params = new MapSqlParameterSource();
@@ -271,7 +275,7 @@ public class TemplateRepository {
     public void updateTemplateMetadata(Template existingTemplate, UpdateTemplateMetadataRequest updateTemplateMetadataRequest) {
 
         MapSqlParameterSource params = new MapSqlParameterSource();
-        params.addValue("templateId", updateTemplateMetadataRequest.getExistingTemplateId());
+        params.addValue("templateId", updateTemplateMetadataRequest.getCurrentTemplateId());
 
         if (updateTemplateMetadataRequest.getNewTitle() != null && !updateTemplateMetadataRequest.getNewTitle().isBlank()) {
             params.addValue("title", updateTemplateMetadataRequest.getNewTitle());

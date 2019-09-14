@@ -173,7 +173,7 @@ public class TemplateRestControllerImplTest {
     public void updateTemplateMetadata_ValidRequest_ShouldSucceed() {
 
         UpdateTemplateMetadataRequest updateTemplateMetadataRequest = new UpdateTemplateMetadataRequest();
-        updateTemplateMetadataRequest.setExistingTemplateId(50L);
+        updateTemplateMetadataRequest.setCurrentTemplateId(50L);
         updateTemplateMetadataRequest.setNewTitle("This is new title");
         templateRestController.updateTemplateMetadata(updateTemplateMetadataRequest);
     }

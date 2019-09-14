@@ -11,12 +11,17 @@ import PersonPinIcon from '@material-ui/icons/PersonPin';
 
 import TemplateSearch from "./TemplateSearch";
 import TemplateCopy from "./TemplateCopy";
+import TemplateUpdate from "./TemplateUpdate";
+
 import {RootContext} from "../RootContext";
 
 const useStyles = makeStyles({
     container: {
         // display: 'grid'
     },
+    logoutButton: {
+        textAlign: 'right'
+    }
 });
 
 export const TemplateSearchContext = createContext();
@@ -24,7 +29,8 @@ export const TemplateSearchContext = createContext();
 const routes = {
     // '/': () => <HomePage />,
     '/template-search': () => <TemplateSearch />,
-    '/template-copy': () => <TemplateCopy />
+    '/template-copy': () => <TemplateCopy />,
+    '/template-update': () => <TemplateUpdate />
 };
 
 const Provider = ({children}) => {
@@ -71,6 +77,7 @@ export default function NavTabs() {
 
     const handleLogOut = (event) => {
         setAuthenticated('false');
+        navigate('/', true);
     };
 
     return (
@@ -84,9 +91,13 @@ export default function NavTabs() {
                 >
                     <Button onClick={() => navigate('/template-search', true)}>Search Templates</Button>
                     <Button onClick={() => navigate('/template-copy', true)}>Copy Templates</Button>
+                    <Button onClick={() => navigate('/template-update', true)}>Update Templates</Button>
                 </ButtonGroup>
 
-                {authenticated === 'true' && <Button onClick={handleLogOut}>Log Out</Button>}
+                {authenticated === 'true' &&
+                    <div className={classes.logoutButton}>
+                        <Button onClick={handleLogOut}>Log Out</Button>
+                    </div>}
 
                 {routeResult}
 

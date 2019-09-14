@@ -1,22 +1,34 @@
 package com.chrisr.template_util.request;
 
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
 public class UpdateTemplateMetadataRequest {
 
 	@NotNull
-	private Long existingTemplateId;
+	private long currentTemplateId;
+
+	@NotBlank
+	private String currentTemplateTitle;
 
 	private String newTitle;
 	private String newAuthor;
 	private String newVersion;
 
-	public Long getExistingTemplateId() {
-		return existingTemplateId;
+	public long getCurrentTemplateId() {
+		return currentTemplateId;
 	}
 
-	public void setExistingTemplateId(Long existingTemplateId) {
-		this.existingTemplateId = existingTemplateId;
+	public void setCurrentTemplateId(long currentTemplateId) {
+		this.currentTemplateId = currentTemplateId;
+	}
+
+	public String getCurrentTemplateTitle() {
+		return currentTemplateTitle;
+	}
+
+	public void setCurrentTemplateTitle(String currentTemplateTitle) {
+		this.currentTemplateTitle = currentTemplateTitle;
 	}
 
 	public String getNewTitle() {
@@ -46,7 +58,8 @@ public class UpdateTemplateMetadataRequest {
 	@Override
 	public String toString() {
 		return "UpdateTemplateMetadataRequest{" +
-				"existingTemplateId=" + existingTemplateId +
+				"currentTemplateId=" + currentTemplateId +
+				"currentTemplateTitle=" + currentTemplateTitle +
 				", newTitle='" + newTitle + '\'' +
 				", newAuthor='" + newAuthor + '\'' +
 				", newVersion='" + newVersion + '\'' +

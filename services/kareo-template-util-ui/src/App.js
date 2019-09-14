@@ -11,6 +11,9 @@ function App() {
     console.log(`authenticated = ${authenticated}`);
     console.log(`typeof authenticated = ${typeof authenticated}`);
 
+    console.log(`window.location.href = ${window.location.href}`);              // http://localhost:3000/signup
+    console.log(`window.location.pathname = ${window.location.pathname}`);      // /signup
+
     return (
         <div className="App">
             {authenticated !== 'false' && <div><NavTabs /></div>}

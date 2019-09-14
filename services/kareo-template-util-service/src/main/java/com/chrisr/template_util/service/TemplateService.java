@@ -95,10 +95,10 @@ public class TemplateService {
     public void updateTemplateMetadata(UpdateTemplateMetadataRequest updateTemplateMetadataRequest) {
 
         // get the existing template
-        long[] templateIds = {updateTemplateMetadataRequest.getExistingTemplateId()};
-        List<Template> templates = templateRepository.getTemplatesByIds("SYSTEM", null, templateIds);
+        long[] templateIds = {updateTemplateMetadataRequest.getCurrentTemplateId()};
+        List<Template> templates = templateRepository.getTemplatesByIds(null, null, templateIds);
         if (templates.isEmpty()) {
-            String errorMessage = String.format("Template Not Found with ID = %s", updateTemplateMetadataRequest.getExistingTemplateId());
+            String errorMessage = String.format("Template Not Found with ID = %s", updateTemplateMetadataRequest.getCurrentTemplateId());
             throw new ResourceNotFoundException(errorMessage);
         }
 
