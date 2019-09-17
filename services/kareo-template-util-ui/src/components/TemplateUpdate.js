@@ -62,12 +62,12 @@ const useStyles = makeStyles({
     errorSnackBar: {
         backgroundColor: '#e74c3c',
     },
+    successSnackBar: {
+        marginTop: '1.5rem'
+    },
     divider: {
         marginTop: '1.5rem',
         borderBottom: '2px solid whitesmoke'
-    },
-    searchResults: {
-        margin: '1.5rem'
     }
 });
 
@@ -304,18 +304,17 @@ export default function TemplateUpdate() {
                     key={index}
                 />))}</div>}
 
+                {responseMessage.length > 0 && <SnackbarContent
+                    className={classes.successSnackBar}
+                    message={responseMessage}
+                />}
+
             </div>
 
-            <div className={classes.divider}></div>
+            {/*<div className={classes.divider}></div>*/}
 
             {/*{isSearchButtonDisabled && <CircularProgress className={classes.progress} />}*/}
             {isSubmitButtonDisabled && <LinearProgress variant="query" />}
-
-            {!isSubmitButtonDisabled && responseMessage.length > 0 &&
-            <div className={classes.searchResults}>
-                {responseMessage}
-            </div>
-            }
 
             {/*{!isSubmitButtonDisabled && searchResults.length === 0 &&*/}
             {/*<div className={classes.searchResults}>*/}
