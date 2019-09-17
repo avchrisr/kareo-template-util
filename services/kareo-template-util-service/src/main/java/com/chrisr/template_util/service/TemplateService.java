@@ -103,6 +103,12 @@ public class TemplateService {
         }
 
         Template existingTemplate = templates.get(0);
+        if (!existingTemplate.getTitle().equalsIgnoreCase(updateTemplateMetadataRequest.getCurrentTemplateTitle())) {
+            // validate that the title in the existing template matches the current title provided in the request
+            String errorMessage = String.format("Template title provided does not match the existing template's title with ID = %s", updateTemplateMetadataRequest.getCurrentTemplateId());
+            throw new ResourceNotFoundException(errorMessage);
+        }
+
         templateRepository.updateTemplateMetadata(existingTemplate, updateTemplateMetadataRequest);
     }
 

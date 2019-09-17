@@ -9,11 +9,14 @@ import MenuIcon from '@material-ui/icons/Menu';
 import AccessAlarmIcon from '@material-ui/icons/AccessAlarm';
 import axios from 'axios';
 import _ from 'lodash';
-import { TemplateSearchContext } from "./NavTabs";
+import { RootContext } from "../RootContext";
+import {TemplateContext} from "./NavTabs";
 
 const REACT_APP_NGINX_HOSTNAME = process.env.REACT_APP_NGINX_HOSTNAME || 'localhost';
 const REACT_APP_NGINX_PORT = process.env.REACT_APP_NGINX_PORT || '3001';
 const REACT_APP_API_VERSION = process.env.REACT_APP_API_VERSION || 'v1';
+
+const isOnlyNumbersRegEx = /^\d+$/;
 
 
 // TODO:
@@ -26,7 +29,7 @@ const REACT_APP_API_VERSION = process.env.REACT_APP_API_VERSION || 'v1';
 const useStyles = makeStyles({
     container: {
         display: 'grid',
-        gridTemplateColumns: '1fr 1fr 1fr',
+        gridTemplateColumns: '1fr 1fr',
         // gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
 
         gridRowGap: '15px',
@@ -40,9 +43,24 @@ const useStyles = makeStyles({
 
         // border: '2px solid blue'
     },
-    displayError: {
+    buttons: {
+        display: 'grid',
+        gridTemplateColumns: '100px 100px',
+        gridGap: '1rem',
+        marginTop: '2rem'
+        // gridTemplateColumns: 'minmax(1fr, auto) minmax(1fr, auto)',
+    },
+    errorMessage: {
         color: 'red',
-        // margin: '30px 50px'
+        display: 'grid',
+        gridTemplateColumns: '1fr',
+        gridRowGap: '10px',
+        marginTop: '20px'
+
+        // border: '1px solid red',
+    },
+    errorSnackBar: {
+        backgroundColor: '#e74c3c',
     },
     divider: {
         marginTop: '1.5rem',
@@ -61,16 +79,24 @@ function createData(id, type, title, author, version, username, createdOn, updat
 export default function TemplateUpdate() {
     const classes = useStyles();
 
-    const [currentTemplateId, setCurrentTemplateId] = useState('');
-    const [currentTemplateTitle, setCurrentTemplateTitle] = useState('');
-    const [newTemplateTitle, setNewTemplateTitle] = useState('');
-    const [newTemplateAuthor, setNewTemplateAuthor] = useState('');
-    const [newTemplateVersion, setNewTemplateVersion] = useState('');
+    const { authenticated, setAuthenticated, authBody, setAuthBody } = useContext(RootContext);
+
+    console.log(`TemplateSearch - authenticated = ${authenticated}`);
+    console.log(`TemplateSearch - authBody = ${authBody}`);
+
+    const authBodyJson = JSON.parse(authBody);
+    console.log(authBodyJson.jwt);
+
+
+    const { currentTemplateId, setCurrentTemplateId,
+        currentTemplateTitle, setCurrentTemplateTitle,
+        newTemplateTitle, setNewTemplateTitle,
+        newTemplateAuthor, setNewTemplateAuthor,
+        newTemplateVersion, setNewTemplateVersion } = useContext(TemplateContext);
 
     const [isSubmitButtonDisabled, setSubmitButtonDisabled] = useState(false);
-    const [errorMessage, setErrorMessage] = useState('');
+    const [errorMessages, setErrorMessages] = useState([]);
     const [responseMessage, setResponseMessage] = useState('');
-
 
     const handleInputValueChange = (event) => {
 
@@ -94,125 +120,89 @@ export default function TemplateUpdate() {
                 console.log(`Error - Unrecognized event.target.name = ${event.target.name}`);
                 break;
         }
-
-        // setErrorMessage('');
     };
 
     const handleSubmit = async (event) => {
         event.preventDefault();
 
+        const currentId = currentTemplateId.trim();
+        const currentTitle = currentTemplateTitle.trim();
+        const newTitle = newTemplateTitle.trim();
+        const newAuthor = newTemplateAuthor.trim();
+        const newVersion = newTemplateVersion.trim();
+
         // INPUT VALIDATION
-        if (_.isEmpty(currentTemplateId) || _.isEmpty(currentTemplateTitle)) {
-            setErrorMessage('Current Template ID and Current Template Title are required.');
-            return;
+        const errorMessages = [];
+
+        if (_.isEmpty(currentId) || _.isEmpty(currentTitle)) {
+            errorMessages.push('Current Template ID and Current Template Title are required.');
         }
 
-        if (_.isEmpty(newTemplateTitle) && _.isEmpty(newTemplateAuthor) && _.isEmpty(newTemplateVersion)) {
-            setErrorMessage('At least one field of new template is required.');
+        if (!_.isEmpty(currentId) && (!isOnlyNumbersRegEx.test(currentId) || !_.isInteger(_.toFinite(currentId)))) {
+            errorMessages.push(`"${currentId}" is not a valid template ID as it is not an integer number.`);
+        }
+
+        if (_.isEmpty(newTitle) && _.isEmpty(newAuthor) && _.isEmpty(newVersion)) {
+            errorMessages.push('At least one new template field is required.');
+        }
+
+        if (errorMessages.length > 0) {
+            setErrorMessages(errorMessages);
             return;
         }
 
         // disable the submit button until response comes back
         setSubmitButtonDisabled(true);
+        setErrorMessages([]);
 
+        const url = `http://${REACT_APP_NGINX_HOSTNAME}:${REACT_APP_NGINX_PORT}/api/${REACT_APP_API_VERSION}/templates/update-template-metadata`;
 
-        setTimeout(() => {
-            setResponseMessage('Success!');
-            setSubmitButtonDisabled(false);
-        }, 2000);
+        const requestBody = {
+            currentTemplateId: currentId,
+            currentTemplateTitle: currentTitle,
+            newTitle,
+            newAuthor,
+            newVersion
+        };
 
+        console.log(`## URL = ${url}`);
 
+        const options = {
+            url,
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + authBodyJson.jwt
+            },
+            data: requestBody,
+            timeout: 15000,
+            // auth: {
+            //     username: environment.username,
+            //     password: environment.password
+            // }
+        };
 
-        /*
-                let url = `http://${REACT_APP_NGINX_HOSTNAME}:${REACT_APP_NGINX_PORT}/api/${REACT_APP_API_VERSION}/templates`;
-                let queryCount = 0;
+        console.log(`URL = ${url}`);
 
-                if (title) {
-                    if (queryCount === 0) {
-                        url += '?';
-                    } else {
-                        url += '&';
-                    }
-                    queryCount += 1;
-                    url += `title=${title}`
-                }
+        const res = await axios(options).catch((err) => {
+            console.log(`-------------  AXIOS ERROR  ---------------`);
+            console.log(err);
+            console.log(JSON.stringify(err, null, 4));
+            console.log(`-------------  ERROR RESPONSE  ---------------`);
+            console.log(err.response);
 
-                console.log(`## URL = ${url}`);
+            const errorMessage = _.get(err, 'response.data.message') || _.get(err, 'message');
+            setErrorMessages([errorMessage]);
+        });
 
+        if (res) {
+            console.log(`-------------  res.data  ---------------`);
+            console.log(JSON.stringify(res.data, null, 4));
 
-                // TODO: implement user login and proper JWT usage
-                const jwt = 'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJjaHJpc3IiLCJpYXQiOjE1Njc1NDU3MjAsImV4cCI6MTU2ODE1MDUyMH0.ps-dOeKe4BA7hbZ7EWWfFHG-H-FQxMtRFhhaap2LIzaL_cQkbY2lXZuGdkWLgPkqw558tmZFXv_i478Jxavxgg';
+            setResponseMessage(res.data.message);
+        }
 
-
-                const options = {
-                    url,
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': 'Bearer ' + jwt
-                    },
-                    // data: dataSource.buildPayload(),
-                    timeout: 5000,
-                    // auth: {
-                    //     username: environment.username,
-                    //     password: environment.password
-                    // }
-                };
-
-                console.log(`URL = ${url}`);
-
-                const res = await axios(options).catch((err) => {
-                    console.log(`-------------  AXIOS ERROR  ---------------`);
-                    console.log(err);
-                    console.log(JSON.stringify(err, null, 4));
-                    console.log(`-------------  ERROR RESPONSE  ---------------`);
-                    console.log(err.response);
-
-                    const errorMessage = _.get(err, 'response.data.message') || _.get(err, 'message');
-                    setErrorMessage(errorMessage);
-
-                    // TODO: below pseudo search result is for demonstrative purpose (when an error occurs). remove this pseudo data later
-
-                    setSearchResults([
-                        createData(1, 'System', 'Acne', 'Kareo', '1.0', null, '2018-01-01', '2018-01-01'),
-                        createData(223, 'User', 'MedSpa', 'Amy', '1.5', 'amy.vandenbrink@kareotest.com', '2018-01-01', '2018-01-01'),
-                        createData(356, 'User', 'Depression', 'Susie', '1.1', 's.johnson@medical.com', '2018-01-01', '2018-01-01'),
-                        createData(434, 'System', 'Acupuncture', 'Kareo', '1.0', null, '2018-01-01', '2018-01-01'),
-                        createData(564, 'User', 'Diabetes', 'Dr. House', '1.0', 'house@practice.com', '2018-01-01', '2018-02-01'),
-                        createData(6, 'System', 'Acne', 'Kareo', '1.0', null, '2018-01-01', '2018-01-01'),
-                        createData(723, 'User', 'MedSpa', 'Amy', '1.5', 'amy.vandenbrink@kareotest.com', '2018-01-01', '2018-01-01'),
-                        createData(856, 'User', 'Depression', 'Susie', '1.1', 's.johnson@medical.com', '2018-01-01', '2018-01-01'),
-                        createData(934, 'System', 'Acupuncture', 'Kareo', '1.0', null, '2018-01-01', '2018-01-01'),
-                        createData(1034, 'System', 'Acupuncture', 'Kareo', '1.0', null, '2018-01-01', '2018-01-01'),
-                        createData(1164, 'User', 'Diabetes', 'Dr. House', '1.0', 'house@practice.com', '2018-01-01', '2018-02-01'),
-                        createData(12, 'System', 'Acne', 'Kareo', '1.0', null, '2018-01-01', '2018-01-01'),
-                        createData(1323, 'User', 'MedSpa', 'Amy', '1.5', 'amy.vandenbrink@kareotest.com', '2018-01-01', '2018-01-01'),
-                        createData(1456, 'User', 'Depression', 'Susie', '1.1', 's.johnson@medical.com', '2018-01-01', '2018-01-01'),
-                        createData(1534, 'System', 'Acupuncture', 'Kareo', '1.0', null, '2018-01-01', '2018-01-01'),
-                        createData(1664, 'User', 'Diabetes', 'Dr. House', '1.0', 'house@practice.com', '2018-01-01', '2018-02-01'),
-                        createData(17, 'System', 'Acne', 'Kareo', '1.0', null, '2018-01-01', '2018-01-01'),
-                        createData(1823, 'User', 'MedSpa', 'Amy', '1.5', 'amy.vandenbrink@kareotest.com', '2018-01-01', '2018-01-01'),
-                        createData(1956, 'User', 'Depression', 'Susie', '1.1', 's.johnson@medical.com', '2018-01-01', '2018-01-01'),
-                        createData(2064, 'User', 'Diabetes', 'Dr. House', '1.0', 'house@practice.com', '2018-01-01', '2018-02-01'),
-                        createData(21, 'System', 'Acne', 'Kareo', '1.0', null, '2018-01-01', '2018-01-01'),
-                        createData(2223, 'User', 'MedSpa', 'Amy', '1.5', 'amy.vandenbrink@kareotest.com', '2018-01-01', '2018-01-01'),
-                        createData(2356, 'User', 'Depression', 'Susie', '1.1', 's.johnson@medical.com', '2018-01-01', '2018-01-01'),
-                        createData(2434, 'System', 'Acupuncture', 'Kareo', '1.0', null, '2018-01-01', '2018-01-01'),
-                        createData(2564, 'User', 'Diabetes', 'Dr. House', '1.0', 'house@practice.com', '2018-01-01', '2018-02-01')
-                    ]);
-                });
-
-                if (res) {
-                    console.log(`-------------  res.data  ---------------`);
-                    console.log(JSON.stringify(res.data, null, 4));
-
-                    setSearchResults(res.data);
-                    setPage(0);
-                }
-        */
-
-        // setSubmitButtonDisabled(false);
-
+        setSubmitButtonDisabled(false);
     };
 
     const handleReset = () => {
@@ -222,7 +212,7 @@ export default function TemplateUpdate() {
         setNewTemplateAuthor('');
         setNewTemplateVersion('');
         setSubmitButtonDisabled(false);
-        setErrorMessage('');
+        setErrorMessages([]);
         setResponseMessage('');
     };
 
@@ -246,19 +236,25 @@ export default function TemplateUpdate() {
                 <div>
                     <TextField
                         label="Current Template ID"
-                        // helperText="Not applicable for System Templates"
+                        helperText="Only one template can be updated at a time"
                         value={currentTemplateId}
                         name="currentTemplateId"
                         onChange={handleInputValueChange}
                         margin="normal"
+                        required
                     />
                     <TextField style={{display: 'block'}}
                                label="Current Template Title"
+                               helperText="This is to ensure that the right template is updated"
                                value={currentTemplateTitle}
                                name="currentTemplateTitle"
                                onChange={handleInputValueChange}
                                margin="normal"
+                               required
                     />
+                </div>
+
+                <div>
                     <TextField style={{display: 'block'}}
                                label="New Template Title"
                                value={newTemplateTitle}
@@ -282,8 +278,6 @@ export default function TemplateUpdate() {
                     />
                 </div>
 
-                <div/>
-
                 <div className={classes.buttons}>
                     <Button
                         color="primary"
@@ -303,16 +297,13 @@ export default function TemplateUpdate() {
                 </div>
 
                 <div/>
-                <div/>
 
-                {errorMessage.length > 0 &&
-                <div className={classes.displayError}>
-                    <SnackbarContent
-                        className={classes.snackbar}
-                        message={errorMessage}
-                    />
-                </div>
-                }
+                {errorMessages.length > 0 && <div className={classes.errorMessage}>{errorMessages.map((errorMessage, index) => (<SnackbarContent
+                    className={classes.errorSnackBar}
+                    message={errorMessage}
+                    key={index}
+                />))}</div>}
+
             </div>
 
             <div className={classes.divider}></div>

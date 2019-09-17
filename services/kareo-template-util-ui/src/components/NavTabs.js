@@ -13,18 +13,27 @@ import TemplateSearch from "./TemplateSearch";
 import TemplateCopy from "./TemplateCopy";
 import TemplateUpdate from "./TemplateUpdate";
 
-import {RootContext} from "../RootContext";
+import { RootContext } from "../RootContext";
 
 const useStyles = makeStyles({
     container: {
         // display: 'grid'
     },
+    profileBar: {
+        display: 'grid',
+        gridTemplateColumns: '5fr 1fr',
+        margin: '0.5rem',
+        // height: '1rem',
+
+        // border: '1px solid blue'
+    },
     logoutButton: {
-        textAlign: 'right'
+        // width: '20%',
+        // textAlign: 'right'
     }
 });
 
-export const TemplateSearchContext = createContext();
+export const TemplateContext = createContext();
 
 const routes = {
     // '/': () => <HomePage />,
@@ -35,6 +44,7 @@ const routes = {
 
 const Provider = ({children}) => {
 
+    // template search page fields
     const [type, setType] = useState('either');
     const [title, setTitle] = useState('');
     const [author, setAuthor] = useState('');
@@ -45,9 +55,21 @@ const Provider = ({children}) => {
     const [isSearchButtonDisabled, setSearchButtonDisabled] = useState(false);
     const [errorMessage, setErrorMessage] = useState('');
     const [searchResults, setSearchResults] = useState([]);
-
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(5);
+
+    // template update page fields
+    const [currentTemplateId, setCurrentTemplateId] = useState('');
+    const [currentTemplateTitle, setCurrentTemplateTitle] = useState('');
+    const [newTemplateTitle, setNewTemplateTitle] = useState('');
+    const [newTemplateAuthor, setNewTemplateAuthor] = useState('');
+    const [newTemplateVersion, setNewTemplateVersion] = useState('');
+    // const [isSubmitButtonDisabled, setSubmitButtonDisabled] = useState(false);
+    // const [errorMessages, setErrorMessages] = useState([]);
+    // const [responseMessage, setResponseMessage] = useState('');
+
+    // template copy page fields
+    // ...
 
     const value = {
         type, setType,
@@ -60,12 +82,18 @@ const Provider = ({children}) => {
         isSearchButtonDisabled, setSearchButtonDisabled,
         errorMessage, setErrorMessage,
         searchResults, setSearchResults,
-        page, setPage, rowsPerPage, setRowsPerPage };
+        page, setPage, rowsPerPage, setRowsPerPage,
+        currentTemplateId, setCurrentTemplateId,
+        currentTemplateTitle, setCurrentTemplateTitle,
+        newTemplateTitle, setNewTemplateTitle,
+        newTemplateAuthor, setNewTemplateAuthor,
+        newTemplateVersion, setNewTemplateVersion
+    };
 
     return (
-        <TemplateSearchContext.Provider value={value}>
+        <TemplateContext.Provider value={value}>
             {children}
-        </TemplateSearchContext.Provider>
+        </TemplateContext.Provider>
     );
 };
 
@@ -75,10 +103,17 @@ export default function NavTabs() {
 
     const { authenticated, setAuthenticated, authBody, setAuthBody } = useContext(RootContext);
 
+    console.log(`authenticated = ${authenticated}`);
+    console.log(`authBody = ${authBody}`);
+
     const handleLogOut = (event) => {
         setAuthenticated('false');
+        setAuthBody('');
         navigate('/', true);
     };
+
+    // TODO: display username
+    // const authBodyJson = JSON.parse(authBody);
 
     return (
         <Provider>
@@ -95,8 +130,11 @@ export default function NavTabs() {
                 </ButtonGroup>
 
                 {authenticated === 'true' &&
-                    <div className={classes.logoutButton}>
-                        <Button onClick={handleLogOut}>Log Out</Button>
+                    <div className={classes.profileBar}>
+                        <div style={{lineHeight: '2rem'}}><Button size="large" variant="text">Chris</Button></div>
+                        <Button onClick={handleLogOut} variant="outlined">Log Out</Button>
+
+                        {/* <div>{authBody}</div> */}
                     </div>}
 
                 {routeResult}

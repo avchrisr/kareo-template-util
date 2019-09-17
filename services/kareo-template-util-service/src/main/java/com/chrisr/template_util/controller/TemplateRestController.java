@@ -24,7 +24,7 @@ public interface TemplateRestController {
 	@PostMapping("/copy-templates")
 	ResponseEntity<ApiResponse> copyTemplates(@Valid @RequestBody CopyTemplatesRequest copyTemplatesRequest);
 
-	@PostMapping("/update-system-template-metadata")
+	@PostMapping("/update-template-metadata")
 	ResponseEntity<ApiResponse> updateTemplateMetadata(@Valid @RequestBody UpdateTemplateMetadataRequest updateTemplateMetadataRequest);
 
 

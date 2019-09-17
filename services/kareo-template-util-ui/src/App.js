@@ -4,6 +4,7 @@ import './App.css';
 import NavTabs from './components/NavTabs';
 import { RootContext } from './RootContext';
 import SignIn from "./components/SignIn";
+import SignUp from "./components/SignUp";
 
 function App() {
     const { authenticated, authBody } = useContext(RootContext);
@@ -17,7 +18,7 @@ function App() {
     return (
         <div className="App">
             {authenticated !== 'false' && <div><NavTabs /></div>}
-            {authenticated === 'false' && <SignIn/>}
+            {authenticated === 'false' && (window.location.pathname === '/signup' ? <SignUp /> : <SignIn />)}
         </div>
     );
 }

@@ -58,6 +58,14 @@ public class TemplateRepository {
 
         MapSqlParameterSource params = new MapSqlParameterSource();
         String baseQuery = "SELECT TEMPLATES_ID, TITLE, AUTHOR, VERSION, CREATE_DT, LAST_MOD_DT FROM HEALTHCARE.TEMPLATES WHERE IS_DELETED = 0 AND IS_PUBLISHED = 1";
+
+
+        // TODO: retrieve username corresponding to each template result row, if the type is not "SYSTEM".
+//        String baseQuery = "SELECT t.TEMPLATES_ID, t.TITLE, t.AUTHOR, t.VERSION, t.CREATE_DT, t.LAST_MOD_DT " +
+//                "FROM HEALTHCARE.TEMPLATES t JOIN REG.USERS u ON u.USER_ID = t.USER_ID " +
+//                "WHERE UPPER(TRIM(u.USERNAME)) = :username AND IS_DELETED = 0 AND IS_PUBLISHED = 1";
+
+
         StringBuilder stringBuilder = new StringBuilder(baseQuery);
 
         if (title != null && !title.isBlank()) {

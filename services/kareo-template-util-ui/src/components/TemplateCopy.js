@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import { makeStyles } from '@material-ui/styles';
 import {
     AppBar, Button, FormControl, FormControlLabel, FormLabel, InputLabel, LinearProgress,
@@ -7,6 +7,7 @@ import {
 
 import _ from 'lodash';
 import axios from 'axios';
+import { RootContext } from "../RootContext";
 
 const isOnlyNumbersRegEx = /^\d+$/;
 
@@ -54,11 +55,22 @@ const useStyles = makeStyles({
         marginTop: '20px'
 
         // border: '1px solid red',
+    },
+    errorSnackBar: {
+        backgroundColor: '#e74c3c',
     }
 });
 
 function TemplateCopy() {
     const classes = useStyles();
+
+    const { authenticated, setAuthenticated, authBody, setAuthBody } = useContext(RootContext);
+
+    console.log(`TemplateSearch - authenticated = ${authenticated}`);
+    console.log(`TemplateSearch - authBody = ${authBody}`);
+
+    const authBodyJson = JSON.parse(authBody);
+    console.log(authBodyJson.jwt);
 
     const [fromEnv, setFromEnv] = useState('dev');
     const [toEnv, setToEnv] = useState('dev');
@@ -205,20 +217,15 @@ function TemplateCopy() {
             systemTemplateIdToReplace: systemTemplateIdToReplace
         };
 
-
-        // TODO: implement user login and proper JWT usage
-        const jwt = 'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJjaHJpc3IiLCJpYXQiOjE1Njc1NDU3MjAsImV4cCI6MTU2ODE1MDUyMH0.ps-dOeKe4BA7hbZ7EWWfFHG-H-FQxMtRFhhaap2LIzaL_cQkbY2lXZuGdkWLgPkqw558tmZFXv_i478Jxavxgg';
-
-
         const options = {
             url,
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': 'Bearer ' + jwt
+                'Authorization': 'Bearer ' + authBodyJson.jwt
             },
             data: requestBody,
-            timeout: 15000,
+            timeout: 420000,        // 7 min (420 seconds)
             // auth: {
             //     username: environment.username,
             //     password: environment.password
@@ -438,9 +445,10 @@ function TemplateCopy() {
                 {isLoading && <LinearProgress variant="query" />}
 
                 {/*<div className={classes.errorMessage}>{errorMessages.map((errorMessage) => (<div>{errorMessage}</div>))}</div>*/}
-                {errorMessages.length > 0 && <div className={classes.errorMessage}>{errorMessages.map((errorMessage) => (<SnackbarContent
-                    className={classes.snackbar}
+                {errorMessages.length > 0 && <div className={classes.errorMessage}>{errorMessages.map((errorMessage, index) => (<SnackbarContent
+                    className={classes.errorSnackBar}
                     message={errorMessage}
+                    key={index}
                 />))}</div>}
 
                 {submitResponseMessage.length > 0 && <SnackbarContent

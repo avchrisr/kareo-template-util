@@ -9,7 +9,9 @@ import MenuIcon from '@material-ui/icons/Menu';
 import AccessAlarmIcon from '@material-ui/icons/AccessAlarm';
 import axios from 'axios';
 import _ from 'lodash';
-import { TemplateSearchContext } from "./NavTabs";
+import { TemplateContext } from "./NavTabs";
+
+import { RootContext } from "../RootContext";
 
 const REACT_APP_NGINX_HOSTNAME = process.env.REACT_APP_NGINX_HOSTNAME || 'localhost';
 const REACT_APP_NGINX_PORT = process.env.REACT_APP_NGINX_PORT || '3001';
@@ -53,6 +55,15 @@ function createData(id, type, title, author, version, username, createdOn, updat
 export default function TemplateSearch() {
     const classes = useStyles();
 
+    const { authenticated, setAuthenticated, authBody, setAuthBody } = useContext(RootContext);
+
+    console.log(`TemplateSearch - authenticated = ${authenticated}`);
+    console.log(`TemplateSearch - authBody = ${authBody}`);
+
+    const authBodyJson = JSON.parse(authBody);
+    console.log(authBodyJson.jwt);
+
+
     const {
         type, setType,
         title, setTitle,
@@ -64,7 +75,7 @@ export default function TemplateSearch() {
         isSearchButtonDisabled, setSearchButtonDisabled,
         errorMessage, setErrorMessage,
         searchResults, setSearchResults,
-        page, setPage, rowsPerPage, setRowsPerPage } = useContext(TemplateSearchContext);
+        page, setPage, rowsPerPage, setRowsPerPage } = useContext(TemplateContext);
 
     const emptyRows = rowsPerPage - Math.min(rowsPerPage, searchResults.length - page * rowsPerPage);
 
@@ -189,20 +200,15 @@ export default function TemplateSearch() {
 
         console.log(`## URL = ${url}`);
 
-
-        // TODO: implement user login and proper JWT usage
-        const jwt = 'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJjaHJpc3IiLCJpYXQiOjE1Njc1NDU3MjAsImV4cCI6MTU2ODE1MDUyMH0.ps-dOeKe4BA7hbZ7EWWfFHG-H-FQxMtRFhhaap2LIzaL_cQkbY2lXZuGdkWLgPkqw558tmZFXv_i478Jxavxgg';
-
-
         const options = {
             url,
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': 'Bearer ' + jwt
+                'Authorization': 'Bearer ' + authBodyJson.jwt
             },
             // data: dataSource.buildPayload(),
-            timeout: 5000,
+            timeout: 15000,
             // auth: {
             //     username: environment.username,
             //     password: environment.password
