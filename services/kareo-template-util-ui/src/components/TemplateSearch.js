@@ -34,9 +34,8 @@ const useStyles = makeStyles({
 
         // border: '2px solid blue'
     },
-    displayError: {
-        color: 'red',
-        // margin: '30px 50px'
+    errorSnackBar: {
+        backgroundColor: '#e74c3c',
     },
     divider: {
         marginTop: '1.5rem',
@@ -129,7 +128,6 @@ export default function TemplateSearch() {
 
         // INPUT VALIDATION
         if (_.isEmpty(title) &&
-            _.isEmpty(type) &&
             _.isEmpty(author) &&
             _.isEmpty(version) &&
             _.isEmpty(username)) {
@@ -365,12 +363,10 @@ export default function TemplateSearch() {
                 <div/>
 
                 {errorMessage.length > 0 &&
-                <div className={classes.displayError}>
                     <SnackbarContent
-                        className={classes.snackbar}
+                        className={classes.errorSnackBar}
                         message={errorMessage}
                     />
-                </div>
                 }
             </div>
 

@@ -8,6 +8,7 @@ import {
 import _ from 'lodash';
 import axios from 'axios';
 import { RootContext } from "../RootContext";
+import { TemplateContext } from "./NavTabs";
 
 const isOnlyNumbersRegEx = /^\d+$/;
 
@@ -72,15 +73,18 @@ function TemplateCopy() {
     const authBodyJson = JSON.parse(authBody);
     console.log(authBodyJson.jwt);
 
-    const [fromEnv, setFromEnv] = useState('dev');
-    const [toEnv, setToEnv] = useState('dev');
-    const [fromType, setFromType] = useState('user');
-    const [toType, setToType] = useState('user');
-    const [fromUsername, setFromUsername] = useState('');
-    const [toUsername, setToUsername] = useState('');
-    const [templateIds, setTemplateIds] = useState('');
-    const [createOrReplaceSystemTemplate, setCreateOrReplaceSystemTemplate] = useState('create');
-    const [systemTemplateIdToReplace, setSystemTemplateIdToReplace] = useState('');
+    const {
+        fromEnv, setFromEnv,
+        toEnv, setToEnv,
+        fromType, setFromType,
+        toType, setToType,
+        fromUsername, setFromUsername,
+        toUsername, setToUsername,
+        templateIds, setTemplateIds,
+        createOrReplaceSystemTemplate, setCreateOrReplaceSystemTemplate,
+        systemTemplateIdToReplace, setSystemTemplateIdToReplace
+    } = useContext(TemplateContext);
+
     const [isLoading, setLoading] = useState(false);
     const [errorMessages, setErrorMessages] = useState([]);
     const [submitResponseMessage, setSubmitResponseMessage] = useState('');

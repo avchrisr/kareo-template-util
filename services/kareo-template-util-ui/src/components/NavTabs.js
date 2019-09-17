@@ -69,7 +69,15 @@ const Provider = ({children}) => {
     // const [responseMessage, setResponseMessage] = useState('');
 
     // template copy page fields
-    // ...
+    const [fromEnv, setFromEnv] = useState('dev');
+    const [toEnv, setToEnv] = useState('dev');
+    const [fromType, setFromType] = useState('user');
+    const [toType, setToType] = useState('user');
+    const [fromUsername, setFromUsername] = useState('');
+    const [toUsername, setToUsername] = useState('');
+    const [templateIds, setTemplateIds] = useState('');
+    const [createOrReplaceSystemTemplate, setCreateOrReplaceSystemTemplate] = useState('create');
+    const [systemTemplateIdToReplace, setSystemTemplateIdToReplace] = useState('');
 
     const value = {
         type, setType,
@@ -87,7 +95,16 @@ const Provider = ({children}) => {
         currentTemplateTitle, setCurrentTemplateTitle,
         newTemplateTitle, setNewTemplateTitle,
         newTemplateAuthor, setNewTemplateAuthor,
-        newTemplateVersion, setNewTemplateVersion
+        newTemplateVersion, setNewTemplateVersion,
+        fromEnv, setFromEnv,
+        toEnv, setToEnv,
+        fromType, setFromType,
+        toType, setToType,
+        fromUsername, setFromUsername,
+        toUsername, setToUsername,
+        templateIds, setTemplateIds,
+        createOrReplaceSystemTemplate, setCreateOrReplaceSystemTemplate,
+        systemTemplateIdToReplace, setSystemTemplateIdToReplace
     };
 
     return (
