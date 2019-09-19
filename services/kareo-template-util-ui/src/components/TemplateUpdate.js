@@ -68,6 +68,9 @@ const useStyles = makeStyles({
     divider: {
         marginTop: '1.5rem',
         borderBottom: '2px solid whitesmoke'
+    },
+    responseContainer: {
+        margin: '2rem',
     }
 });
 
@@ -295,8 +298,19 @@ export default function TemplateUpdate() {
                         onClick={handleReset}
                     >Reset</Button>
                 </div>
+            </div>
 
-                <div/>
+            <div className={classes.responseContainer}>
+                {/*<div className={classes.divider}></div>*/}
+
+                {/*{isSearchButtonDisabled && <CircularProgress className={classes.progress} />}*/}
+                {isSubmitButtonDisabled && <LinearProgress variant="query" />}
+
+                {/*{!isSubmitButtonDisabled && searchResults.length === 0 &&*/}
+                {/*<div className={classes.searchResults}>*/}
+                {/*    <h3>No Results</h3>*/}
+                {/*</div>*/}
+                {/*}*/}
 
                 {errorMessages.length > 0 && <div className={classes.errorMessage}>{errorMessages.map((errorMessage, index) => (<SnackbarContent
                     className={classes.errorSnackBar}
@@ -308,19 +322,9 @@ export default function TemplateUpdate() {
                     className={classes.successSnackBar}
                     message={responseMessage}
                 />}
-
             </div>
 
-            {/*<div className={classes.divider}></div>*/}
 
-            {/*{isSearchButtonDisabled && <CircularProgress className={classes.progress} />}*/}
-            {isSubmitButtonDisabled && <LinearProgress variant="query" />}
-
-            {/*{!isSubmitButtonDisabled && searchResults.length === 0 &&*/}
-            {/*<div className={classes.searchResults}>*/}
-            {/*    <h3>No Results</h3>*/}
-            {/*</div>*/}
-            {/*}*/}
         </div>
     );
 }

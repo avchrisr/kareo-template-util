@@ -59,6 +59,9 @@ const useStyles = makeStyles({
     },
     errorSnackBar: {
         backgroundColor: '#e74c3c',
+    },
+    responseContainer: {
+        margin: '2rem',
     }
 });
 
@@ -199,13 +202,6 @@ function TemplateCopy() {
         // disable the button until search results comes back
         setLoading(true);
         setErrorMessages([]);
-
-
-        // setTimeout(() => {
-        //     handleReset();
-        // }, 4000);
-
-
 
         const url = `http://${REACT_APP_NGINX_HOSTNAME}:${REACT_APP_NGINX_PORT}/api/${REACT_APP_API_VERSION}/templates/copy-templates`;
 
@@ -444,22 +440,6 @@ function TemplateCopy() {
                         onClick={handleReset}
                     >Reset</Button>
                 </div>
-                <div></div>
-
-                {isLoading && <LinearProgress variant="query" />}
-
-                {/*<div className={classes.errorMessage}>{errorMessages.map((errorMessage) => (<div>{errorMessage}</div>))}</div>*/}
-                {errorMessages.length > 0 && <div className={classes.errorMessage}>{errorMessages.map((errorMessage, index) => (<SnackbarContent
-                    className={classes.errorSnackBar}
-                    message={errorMessage}
-                    key={index}
-                />))}</div>}
-
-                {submitResponseMessage.length > 0 && <SnackbarContent
-                    className={classes.snackbar}
-                    message={submitResponseMessage}
-                />}
-
 
                 {/*<Snackbar*/}
                 {/*    anchorOrigin={{*/}
@@ -477,6 +457,23 @@ function TemplateCopy() {
                 {/*    />*/}
                 {/*</Snackbar>*/}
 
+            </div>
+
+
+            <div className={classes.responseContainer}>
+                {isLoading && <LinearProgress variant="query" />}
+
+                {/*<div className={classes.errorMessage}>{errorMessages.map((errorMessage) => (<div>{errorMessage}</div>))}</div>*/}
+                {errorMessages.length > 0 && <div className={classes.errorMessage}>{errorMessages.map((errorMessage, index) => (<SnackbarContent
+                    className={classes.errorSnackBar}
+                    message={errorMessage}
+                    key={index}
+                />))}</div>}
+
+                {submitResponseMessage.length > 0 && <SnackbarContent
+                    className={classes.snackbar}
+                    message={submitResponseMessage}
+                />}
             </div>
         </div>
     );

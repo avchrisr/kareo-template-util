@@ -63,9 +63,14 @@ public class TemplateRestControllerImpl implements TemplateRestController {
             throw new BadRequestException(errorMessage);
         }
 
-        if ("USER".equalsIgnoreCase(type) && (username == null || username.isBlank())) {
-            String errorMessage = "When the type is USER, username must be provided.";
-            throw new BadRequestException(errorMessage);
+        if ("USER".equalsIgnoreCase(type)) {
+            if (username == null || username.isBlank()) {
+                String errorMessage = "When the type is USER, username must be provided.";
+                throw new BadRequestException(errorMessage);
+            }
+
+            // change the value to "CUSTOM", which is used in BE that's equivalent to "USER" in FE
+            type = "CUSTOM";
         }
 
         if (title != null && title.strip().length() < 3) {
@@ -103,18 +108,6 @@ public class TemplateRestControllerImpl implements TemplateRestController {
     @Override
     public ResponseEntity<ApiResponse> copyTemplates(@Valid @RequestBody CopyTemplatesRequest copyTemplatesRequest) {
         // @Valid annotation is REQUIRED in conjunction with the RequestBody class annotations such as @NotNull @NotBlank @NotEmpty
-
-		/*
-		{
-			"fromEnvironment": "DEV",
-			"toEnvironment": "DEV",
-			"fromType": "SYSTEM",
-			"toType": "USER",
-			"fromUsername": "",
-			"toUsername": "amy@kareo.com",
-			"templateIds": [3]
-		}
-		 */
 
         System.out.println("----------   copyTemplatesRequest   ---------");
         System.out.println(copyTemplatesRequest);
@@ -191,7 +184,7 @@ public class TemplateRestControllerImpl implements TemplateRestController {
             System.out.println("fromUserId = " + fromUserId);
             Long toUserId = null;
 
-            Integer templateCount = templateService.getTemplateCount(fromType, fromUserId, copyTemplatesRequest.getTemplateIds());
+            Integer templateCount = templateService.getTemplateCount("CUSTOM", fromUserId, copyTemplatesRequest.getTemplateIds());
             System.out.println("templateCount = " + templateCount);
 
             if (templateCount != copyTemplatesRequest.getTemplateIds().length) {
@@ -199,7 +192,7 @@ public class TemplateRestControllerImpl implements TemplateRestController {
                 throw new IllegalArgumentException(errorMessage);
             }
 
-            List<Template> templates = templateService.getTemplatesByIds(fromType, fromUserId, copyTemplatesRequest.getTemplateIds());
+            List<Template> templates = templateService.getTemplatesByIds("CUSTOM", fromUserId, copyTemplatesRequest.getTemplateIds());
             System.out.println(templates.toString());
 
             for (Template template : templates) {
@@ -222,7 +215,7 @@ public class TemplateRestControllerImpl implements TemplateRestController {
             Long toUserId = templateService.getUserId(copyTemplatesRequest.getToUsername());
             System.out.println("toUserId = " + toUserId);
 
-            Integer templateCount = templateService.getTemplateCount(fromType, fromUserId, copyTemplatesRequest.getTemplateIds());
+            Integer templateCount = templateService.getTemplateCount("CUSTOM", fromUserId, copyTemplatesRequest.getTemplateIds());
             System.out.println("templateCount = " + templateCount);
 
             if (templateCount != copyTemplatesRequest.getTemplateIds().length) {
@@ -230,7 +223,7 @@ public class TemplateRestControllerImpl implements TemplateRestController {
                 throw new IllegalArgumentException(errorMessage);
             }
 
-            List<Template> templates = templateService.getTemplatesByIds(fromType, fromUserId, copyTemplatesRequest.getTemplateIds());
+            List<Template> templates = templateService.getTemplatesByIds("CUSTOM", fromUserId, copyTemplatesRequest.getTemplateIds());
             System.out.println(templates.toString());
 
             for (Template template : templates) {

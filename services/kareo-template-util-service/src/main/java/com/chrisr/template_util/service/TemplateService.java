@@ -87,7 +87,7 @@ public class TemplateService {
     @Transactional
     public void replaceTemplate(long templateIdToReplace, Template template, TemplateType toTemplateType, Long toUserId) {
         long newTemplateId = copyTemplate(template, toTemplateType, toUserId);
-        templateRepository.deleteTemplate(template.getId());
+        templateRepository.deleteTemplate(templateIdToReplace);
         templateRepository.replaceUserDeactivatedTemplateId(templateIdToReplace, newTemplateId);
     }
 

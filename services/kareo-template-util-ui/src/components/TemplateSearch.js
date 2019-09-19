@@ -159,7 +159,7 @@ export default function TemplateSearch() {
             queryCount += 1;
             url += `find-partial-title-matches=${isPartialTitleMatch}`
         }
-        if (type === 'system' || type === 'custom') {
+        if (type === 'system' || type === 'user') {
             if (queryCount === 0) {
                 url += '?';
             } else {
@@ -373,7 +373,7 @@ export default function TemplateSearch() {
             <div className={classes.divider}></div>
 
             {/*{isSearchButtonDisabled && <CircularProgress className={classes.progress} />}*/}
-            {isSearchButtonDisabled && <LinearProgress variant="query" />}
+            {isSearchButtonDisabled && <LinearProgress className={classes.searchResults} variant="query" />}
 
             {!isSearchButtonDisabled && searchResults.length > 0 &&
             <div className={classes.searchResults}>
