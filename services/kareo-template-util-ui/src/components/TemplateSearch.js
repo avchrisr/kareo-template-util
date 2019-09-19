@@ -43,6 +43,9 @@ const useStyles = makeStyles({
     },
     searchResults: {
         margin: '1.5rem'
+    },
+    responseContainer: {
+        margin: '2rem',
     }
 });
 
@@ -225,35 +228,35 @@ export default function TemplateSearch() {
             const errorMessage = _.get(err, 'response.data.message') || _.get(err, 'message');
             setErrorMessage(errorMessage);
 
-            // TODO: below pseudo search result is for demonstrative purpose (when an error occurs). remove this pseudo data later
-
-            setSearchResults([
-                createData(1, 'System', 'Acne', 'Kareo', '1.0', null, '2018-01-01', '2018-01-01'),
-                createData(223, 'User', 'MedSpa', 'Amy', '1.5', 'amy.vandenbrink@kareotest.com', '2018-01-01', '2018-01-01'),
-                createData(356, 'User', 'Depression', 'Susie', '1.1', 's.johnson@medical.com', '2018-01-01', '2018-01-01'),
-                createData(434, 'System', 'Acupuncture', 'Kareo', '1.0', null, '2018-01-01', '2018-01-01'),
-                createData(564, 'User', 'Diabetes', 'Dr. House', '1.0', 'house@practice.com', '2018-01-01', '2018-02-01'),
-                createData(6, 'System', 'Acne', 'Kareo', '1.0', null, '2018-01-01', '2018-01-01'),
-                createData(723, 'User', 'MedSpa', 'Amy', '1.5', 'amy.vandenbrink@kareotest.com', '2018-01-01', '2018-01-01'),
-                createData(856, 'User', 'Depression', 'Susie', '1.1', 's.johnson@medical.com', '2018-01-01', '2018-01-01'),
-                createData(934, 'System', 'Acupuncture', 'Kareo', '1.0', null, '2018-01-01', '2018-01-01'),
-                createData(1034, 'System', 'Acupuncture', 'Kareo', '1.0', null, '2018-01-01', '2018-01-01'),
-                createData(1164, 'User', 'Diabetes', 'Dr. House', '1.0', 'house@practice.com', '2018-01-01', '2018-02-01'),
-                createData(12, 'System', 'Acne', 'Kareo', '1.0', null, '2018-01-01', '2018-01-01'),
-                createData(1323, 'User', 'MedSpa', 'Amy', '1.5', 'amy.vandenbrink@kareotest.com', '2018-01-01', '2018-01-01'),
-                createData(1456, 'User', 'Depression', 'Susie', '1.1', 's.johnson@medical.com', '2018-01-01', '2018-01-01'),
-                createData(1534, 'System', 'Acupuncture', 'Kareo', '1.0', null, '2018-01-01', '2018-01-01'),
-                createData(1664, 'User', 'Diabetes', 'Dr. House', '1.0', 'house@practice.com', '2018-01-01', '2018-02-01'),
-                createData(17, 'System', 'Acne', 'Kareo', '1.0', null, '2018-01-01', '2018-01-01'),
-                createData(1823, 'User', 'MedSpa', 'Amy', '1.5', 'amy.vandenbrink@kareotest.com', '2018-01-01', '2018-01-01'),
-                createData(1956, 'User', 'Depression', 'Susie', '1.1', 's.johnson@medical.com', '2018-01-01', '2018-01-01'),
-                createData(2064, 'User', 'Diabetes', 'Dr. House', '1.0', 'house@practice.com', '2018-01-01', '2018-02-01'),
-                createData(21, 'System', 'Acne', 'Kareo', '1.0', null, '2018-01-01', '2018-01-01'),
-                createData(2223, 'User', 'MedSpa', 'Amy', '1.5', 'amy.vandenbrink@kareotest.com', '2018-01-01', '2018-01-01'),
-                createData(2356, 'User', 'Depression', 'Susie', '1.1', 's.johnson@medical.com', '2018-01-01', '2018-01-01'),
-                createData(2434, 'System', 'Acupuncture', 'Kareo', '1.0', null, '2018-01-01', '2018-01-01'),
-                createData(2564, 'User', 'Diabetes', 'Dr. House', '1.0', 'house@practice.com', '2018-01-01', '2018-02-01')
-            ]);
+            // // TODO: below pseudo search result is for demonstrative purpose (when an error occurs). remove this pseudo data later
+            //
+            // setSearchResults([
+            //     createData(1, 'System', 'Acne', 'Kareo', '1.0', null, '2018-01-01', '2018-01-01'),
+            //     createData(223, 'User', 'MedSpa', 'Amy', '1.5', 'amy.vandenbrink@kareotest.com', '2018-01-01', '2018-01-01'),
+            //     createData(356, 'User', 'Depression', 'Susie', '1.1', 's.johnson@medical.com', '2018-01-01', '2018-01-01'),
+            //     createData(434, 'System', 'Acupuncture', 'Kareo', '1.0', null, '2018-01-01', '2018-01-01'),
+            //     createData(564, 'User', 'Diabetes', 'Dr. House', '1.0', 'house@practice.com', '2018-01-01', '2018-02-01'),
+            //     createData(6, 'System', 'Acne', 'Kareo', '1.0', null, '2018-01-01', '2018-01-01'),
+            //     createData(723, 'User', 'MedSpa', 'Amy', '1.5', 'amy.vandenbrink@kareotest.com', '2018-01-01', '2018-01-01'),
+            //     createData(856, 'User', 'Depression', 'Susie', '1.1', 's.johnson@medical.com', '2018-01-01', '2018-01-01'),
+            //     createData(934, 'System', 'Acupuncture', 'Kareo', '1.0', null, '2018-01-01', '2018-01-01'),
+            //     createData(1034, 'System', 'Acupuncture', 'Kareo', '1.0', null, '2018-01-01', '2018-01-01'),
+            //     createData(1164, 'User', 'Diabetes', 'Dr. House', '1.0', 'house@practice.com', '2018-01-01', '2018-02-01'),
+            //     createData(12, 'System', 'Acne', 'Kareo', '1.0', null, '2018-01-01', '2018-01-01'),
+            //     createData(1323, 'User', 'MedSpa', 'Amy', '1.5', 'amy.vandenbrink@kareotest.com', '2018-01-01', '2018-01-01'),
+            //     createData(1456, 'User', 'Depression', 'Susie', '1.1', 's.johnson@medical.com', '2018-01-01', '2018-01-01'),
+            //     createData(1534, 'System', 'Acupuncture', 'Kareo', '1.0', null, '2018-01-01', '2018-01-01'),
+            //     createData(1664, 'User', 'Diabetes', 'Dr. House', '1.0', 'house@practice.com', '2018-01-01', '2018-02-01'),
+            //     createData(17, 'System', 'Acne', 'Kareo', '1.0', null, '2018-01-01', '2018-01-01'),
+            //     createData(1823, 'User', 'MedSpa', 'Amy', '1.5', 'amy.vandenbrink@kareotest.com', '2018-01-01', '2018-01-01'),
+            //     createData(1956, 'User', 'Depression', 'Susie', '1.1', 's.johnson@medical.com', '2018-01-01', '2018-01-01'),
+            //     createData(2064, 'User', 'Diabetes', 'Dr. House', '1.0', 'house@practice.com', '2018-01-01', '2018-02-01'),
+            //     createData(21, 'System', 'Acne', 'Kareo', '1.0', null, '2018-01-01', '2018-01-01'),
+            //     createData(2223, 'User', 'MedSpa', 'Amy', '1.5', 'amy.vandenbrink@kareotest.com', '2018-01-01', '2018-01-01'),
+            //     createData(2356, 'User', 'Depression', 'Susie', '1.1', 's.johnson@medical.com', '2018-01-01', '2018-01-01'),
+            //     createData(2434, 'System', 'Acupuncture', 'Kareo', '1.0', null, '2018-01-01', '2018-01-01'),
+            //     createData(2564, 'User', 'Diabetes', 'Dr. House', '1.0', 'house@practice.com', '2018-01-01', '2018-02-01')
+            // ]);
         });
 
         if (res) {
@@ -362,18 +365,22 @@ export default function TemplateSearch() {
                 <div/>
                 <div/>
 
+
+            </div>
+
+            <div className={classes.responseContainer}>
+                {/*{isSearchButtonDisabled && <CircularProgress className={classes.progress} />}*/}
+                {isSearchButtonDisabled && <LinearProgress className={classes.searchResults} variant="query" />}
+
                 {errorMessage.length > 0 &&
-                    <SnackbarContent
-                        className={classes.errorSnackBar}
-                        message={errorMessage}
-                    />
+                <SnackbarContent
+                    className={classes.errorSnackBar}
+                    message={errorMessage}
+                />
                 }
             </div>
 
             <div className={classes.divider}></div>
-
-            {/*{isSearchButtonDisabled && <CircularProgress className={classes.progress} />}*/}
-            {isSearchButtonDisabled && <LinearProgress className={classes.searchResults} variant="query" />}
 
             {!isSearchButtonDisabled && searchResults.length > 0 &&
             <div className={classes.searchResults}>

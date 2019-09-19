@@ -4,6 +4,8 @@ export const RootContext = createContext();
 
 export default ({children}) => {
 
+    // TODO: how to handle Auth workflow in React Hooks
+
     const prevAuth = window.localStorage.getItem('authenticated') || 'false';
     const prevAuthBody = window.localStorage.getItem('authBody') || '';
     const [authenticated, setAuthenticated] = useState(prevAuth);
