@@ -57,14 +57,11 @@ public class TemplateRepository {
     public List<Template> searchForTemplates(String title, String findPartialTitleMatches, String type, String author, String version, String username) {
 
         MapSqlParameterSource params = new MapSqlParameterSource();
-        String baseQuery = "SELECT TEMPLATES_ID, TITLE, AUTHOR, VERSION, CREATE_DT, LAST_MOD_DT FROM HEALTHCARE.TEMPLATES WHERE IS_DELETED = 0 AND IS_PUBLISHED = 1";
 
-
-        // TODO: retrieve username corresponding to each template result row, if the type is not "SYSTEM".
-//        String baseQuery = "SELECT t.TEMPLATES_ID, t.TITLE, t.AUTHOR, t.VERSION, t.CREATE_DT, t.LAST_MOD_DT " +
-//                "FROM HEALTHCARE.TEMPLATES t JOIN REG.USERS u ON u.USER_ID = t.USER_ID " +
-//                "WHERE UPPER(TRIM(u.USERNAME)) = :username AND IS_DELETED = 0 AND IS_PUBLISHED = 1";
-
+        String baseQuery = "SELECT t.TEMPLATES_ID, tt.NAME AS TYPE, t.TITLE, t.AUTHOR, t.VERSION, t.CREATE_DT, t.LAST_MOD_DT, u.USERNAME " +
+                            "FROM HEALTHCARE.TEMPLATES t JOIN HEALTHCARE.TEMPLATE_TYPE tt ON tt.TEMPLATE_TYPE_ID = t.TEMPLATE_TYPE_ID " +
+                            "LEFT JOIN REG.USERS u ON u.USERID = t.USER_ID " +
+                            "WHERE t.IS_DELETED = 0 AND t.IS_PUBLISHED = 1";
 
         StringBuilder stringBuilder = new StringBuilder(baseQuery);
 
@@ -74,35 +71,40 @@ public class TemplateRepository {
             } else {
                 params.addValue("title", title.strip().toUpperCase());
             }
-            stringBuilder.append(" AND UPPER(TRIM(TITLE)) LIKE :title");
+            stringBuilder.append(" AND UPPER(TRIM(t.TITLE)) LIKE :title");
         }
 
         if (type != null && !type.isBlank()) {
             Integer templateTypeId = getTemplateTypeId(TemplateType.valueOf(type.strip().toUpperCase()));
             params.addValue("templateTypeId", templateTypeId);
-            stringBuilder.append(" AND TEMPLATE_TYPE_ID = :templateTypeId");
+            stringBuilder.append(" AND t.TEMPLATE_TYPE_ID = :templateTypeId");
         }
 
         if (author != null && !author.isBlank()) {
             params.addValue("author", author);
-            stringBuilder.append(" AND AUTHOR = :author");
+            stringBuilder.append(" AND t.AUTHOR = :author");
         }
 
         if (version != null && !version.isBlank()) {
             params.addValue("version", version);
-            stringBuilder.append(" AND VERSION = :version");
+            stringBuilder.append(" AND t.VERSION = :version");
         }
 
         if (username != null && !username.isBlank()) {
+            params.addValue("username", username);
+            stringBuilder.append(" AND u.USERNAME = :username");
+
+            // to validate that the username exists
             Long userId = getUserId(username);
-            params.addValue("userId", userId);
-            stringBuilder.append(" AND USER_ID = :userId");
+
+//            params.addValue("userId", userId);
+//            stringBuilder.append(" AND USER_ID = :userId");
         }
 
         // TODO: implement pagination offset
-        stringBuilder.append(" AND ROWNUM <= 100 ORDER BY TITLE ASC");
+        stringBuilder.append(" AND ROWNUM <= 100 ORDER BY t.TITLE ASC");
 
-        return oracleNamedParameterJdbcTemplate.query(stringBuilder.toString(), params, TEMPLATE_ROW_MAPPER);
+        return oracleNamedParameterJdbcTemplate.query(stringBuilder.toString(), params, TEMPLATE_SEARCH_ROW_MAPPER);
     }
 
     public Integer getTemplateCount(String templateType, Long userId, long[] templateIdsFromRequest) {
@@ -347,6 +349,25 @@ public class TemplateRepository {
     private static final String GET_NEXT_POSTGRES_SEQUENCE = "SELECT nextval('sequence_number')";
 
     private static final String GET_USER_ID_QUERY = "SELECT USERID FROM REG.USERS WHERE UPPER(TRIM(USERNAME)) = :username";
+
+    private final RowMapper<Template> TEMPLATE_SEARCH_ROW_MAPPER = (rs, i) -> {
+        Template template = new Template();
+
+        template.setId(rs.getLong("TEMPLATES_ID"));
+        if ("System".equalsIgnoreCase(rs.getString("TYPE"))) {
+            template.setType("System");
+        } else {
+            template.setType("Custom");
+        }
+        template.setAuthor(rs.getString("AUTHOR"));
+        template.setVersion(rs.getString("VERSION"));
+        template.setTitle(rs.getString("TITLE"));
+        template.setCreatedOn(rs.getString("CREATE_DT"));           // TODO: check if Date parsing works. Right now, I'm inserting SYSDATE, not these
+        template.setUpdatedOn(rs.getString("LAST_MOD_DT"));
+        template.setUsername(rs.getString("USERNAME"));
+
+        return template;
+    };
 
     private final RowMapper<Template> TEMPLATE_ROW_MAPPER = (rs, i) -> {
         Template template = new Template();
