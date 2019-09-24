@@ -5,6 +5,9 @@ import javax.validation.constraints.NotNull;
 
 public class UpdateTemplateMetadataRequest {
 
+    @NotBlank
+    private String environment;
+
 	@NotNull
 	private long currentTemplateId;
 
@@ -14,6 +17,14 @@ public class UpdateTemplateMetadataRequest {
 	private String newTitle;
 	private String newAuthor;
 	private String newVersion;
+
+    public String getEnvironment() {
+        return environment;
+    }
+
+    public void setEnvironment(String environment) {
+        this.environment = environment;
+    }
 
 	public long getCurrentTemplateId() {
 		return currentTemplateId;
@@ -55,14 +66,15 @@ public class UpdateTemplateMetadataRequest {
 		this.newVersion = newVersion;
 	}
 
-	@Override
-	public String toString() {
-		return "UpdateTemplateMetadataRequest{" +
-				"currentTemplateId=" + currentTemplateId +
-				"currentTemplateTitle=" + currentTemplateTitle +
-				", newTitle='" + newTitle + '\'' +
-				", newAuthor='" + newAuthor + '\'' +
-				", newVersion='" + newVersion + '\'' +
-				'}';
-	}
+    @Override
+    public String toString() {
+        return "UpdateTemplateMetadataRequest{" +
+                "environment='" + environment + '\'' +
+                ", currentTemplateId=" + currentTemplateId +
+                ", currentTemplateTitle='" + currentTemplateTitle + '\'' +
+                ", newTitle='" + newTitle + '\'' +
+                ", newAuthor='" + newAuthor + '\'' +
+                ", newVersion='" + newVersion + '\'' +
+                '}';
+    }
 }

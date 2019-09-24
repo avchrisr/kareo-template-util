@@ -15,7 +15,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
@@ -26,6 +25,7 @@ import java.util.List;
 public class TemplateRestControllerImpl implements TemplateRestController {
 
     private static final Logger logger = LoggerFactory.getLogger(TemplateRestControllerImpl.class);
+    private static final String numbersOnlyRegex = "^\\d+$";      // "^[0-9]+$"
 
     // 1. GET templates?title=xxx?username=xxx				- title || (username | system)
     // 2. POST templates/copy-user-template-to-user			- fromUser | toUser | title
@@ -46,15 +46,29 @@ public class TemplateRestControllerImpl implements TemplateRestController {
     // TODO: add paging to search results
 
     @Override
-    public ResponseEntity<List<Template>> searchForTemplates(String title, String findPartialTitleMatches, String type, String author, String version, String username) {
+    public ResponseEntity<List<Template>> searchForTemplates(String environment, String title, String findPartialTitleMatches, String type, String author, String version, String username, String templateId) {
+        // CAVEAT
+        // - if templateId is provided, it will be used to retrieve the matching template, and ignore all other parameters
+
+        if (environment == null || environment.isBlank()) {
+            String errorMessage = "Environment must be specified.";
+            throw new BadRequestException(errorMessage);
+        }
 
         if ((title == null || title.isBlank()) &&
-                (type == null || type.isBlank()) &&
-                (author == null || author.isBlank()) &&
-                (version == null || version.isBlank()) &&
-                (username == null || username.isBlank())) {
+            (type == null || type.isBlank()) &&
+            (author == null || author.isBlank()) &&
+            (version == null || version.isBlank()) &&
+            (username == null || username.isBlank()) &&
+            (templateId == null || templateId.isBlank())) {
+
             String errorMessage = "At least one of the following query parameters is required: 'title', 'find-partial-title-matches', " +
-                    "'type', 'author', 'version', or 'username'  (ex) /api/v1/templates?title=MedSpa&find-partial-title-matches=true&type=SYSTEM";
+                    "'type', 'author', 'version', 'username', or 'templateId'  (ex) /api/v1/templates?title=MedSpa&find-partial-title-matches=true&type=SYSTEM";
+            throw new BadRequestException(errorMessage);
+        }
+
+        if (templateId != null && !templateId.isBlank() && !templateId.strip().matches(numbersOnlyRegex)) {
+            String errorMessage = "TemplateID must be a valid number.";
             throw new BadRequestException(errorMessage);
         }
 
@@ -90,15 +104,21 @@ public class TemplateRestControllerImpl implements TemplateRestController {
 
         // TODO: wrap results in a response object, which includes "totalCount", "count", "pageSize", "page"
 
-        List<Template> results = templateService.searchForTemplates(title, findPartialTitleMatches, type, author, version, username);
+        List<Template> results = templateService.searchForTemplates(templateId, title, findPartialTitleMatches, type, author, version, username);
 
         SearchForTemplateRequest searchForTemplateRequest = new SearchForTemplateRequest();
-        searchForTemplateRequest.setTitle(title);
-        searchForTemplateRequest.setFindPartialTitleMatches(findPartialTitleMatches);
-        searchForTemplateRequest.setType(type);
-        searchForTemplateRequest.setAuthor(author);
-        searchForTemplateRequest.setVersion(version);
-        searchForTemplateRequest.setUsername(username);
+        searchForTemplateRequest.setEnvironment(environment);
+
+        if (templateId != null && !templateId.isBlank()) {
+            searchForTemplateRequest.setTemplateId(templateId);
+        } else {
+            searchForTemplateRequest.setTitle(title);
+            searchForTemplateRequest.setFindPartialTitleMatches(findPartialTitleMatches);
+            searchForTemplateRequest.setType(type);
+            searchForTemplateRequest.setAuthor(author);
+            searchForTemplateRequest.setVersion(version);
+            searchForTemplateRequest.setUsername(username);
+        }
 
         templateService.storeRequest(PostgresTableName.REQUEST_HISTORY, searchForTemplateRequest);
 
@@ -246,6 +266,9 @@ public class TemplateRestControllerImpl implements TemplateRestController {
         System.out.println("---------------------");
         System.out.println(updateTemplateMetadataRequest.toString());
 
+        if (updateTemplateMetadataRequest.getEnvironment() == null || updateTemplateMetadataRequest.getEnvironment().isBlank()) {
+            throw new BadRequestException("Environment must be specified.");
+        }
         if (updateTemplateMetadataRequest.getCurrentTemplateId() < 0) {
             throw new BadRequestException("Current Template ID is required.");
         }
@@ -267,13 +290,4 @@ public class TemplateRestControllerImpl implements TemplateRestController {
         return ResponseEntity.ok().body(new ApiResponse(true, "Template has been successfully updated"));
     }
 
-    @Override
-    public ResponseEntity<ApiResponse> databaseDemo(@RequestBody CopyTemplatesRequest copyTemplatesRequest) {
-
-        System.out.println("----------   copyTemplatesRequest   ---------");
-        System.out.println(copyTemplatesRequest);
-
-
-        return null;
-    }
 }

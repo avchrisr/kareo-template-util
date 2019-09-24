@@ -45,20 +45,23 @@ const routes = {
 const Provider = ({children}) => {
 
     // template search page fields
+    const [searchTemplateEnv, setSearchTemplateEnv] = useState('dev');
     const [type, setType] = useState('either');
     const [title, setTitle] = useState('');
     const [author, setAuthor] = useState('');
     const [version, setVersion] = useState('');
     const [username, setUsername] = useState('');
+    const [templateId, setTemplateId] = useState('');
     const [isUsernameFieldDisabled, setUsernameFieldDisabled] = useState(false);
     const [isPartialTitleMatch, setPartialTitleMatch] = useState(false);
     const [isSearchButtonDisabled, setSearchButtonDisabled] = useState(false);
-    const [errorMessage, setErrorMessage] = useState('');
+    const [errorMessages, setErrorMessages] = useState([]);
     const [searchResults, setSearchResults] = useState([]);
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(5);
 
     // template update page fields
+    const [updateTemplateEnv, setUpdateTemplateEnv] = useState('dev');
     const [currentTemplateId, setCurrentTemplateId] = useState('');
     const [currentTemplateTitle, setCurrentTemplateTitle] = useState('');
     const [newTemplateTitle, setNewTemplateTitle] = useState('');
@@ -80,17 +83,20 @@ const Provider = ({children}) => {
     const [systemTemplateIdToReplace, setSystemTemplateIdToReplace] = useState('');
 
     const value = {
+        searchTemplateEnv, setSearchTemplateEnv,
         type, setType,
         title, setTitle,
         author, setAuthor,
         version, setVersion,
         username, setUsername,
+        templateId, setTemplateId,
         isUsernameFieldDisabled, setUsernameFieldDisabled,
         isPartialTitleMatch, setPartialTitleMatch,
         isSearchButtonDisabled, setSearchButtonDisabled,
-        errorMessage, setErrorMessage,
+        errorMessages, setErrorMessages,
         searchResults, setSearchResults,
         page, setPage, rowsPerPage, setRowsPerPage,
+        updateTemplateEnv, setUpdateTemplateEnv,
         currentTemplateId, setCurrentTemplateId,
         currentTemplateTitle, setCurrentTemplateTitle,
         newTemplateTitle, setNewTemplateTitle,

@@ -27,12 +27,15 @@ public class TemplateRepository {
     private static final Logger logger = LoggerFactory.getLogger(TemplateRepository.class);
 
     private final NamedParameterJdbcTemplate oracleNamedParameterJdbcTemplate;
+    private final NamedParameterJdbcTemplate oracleQaNamedParameterJdbcTemplate;
     private final NamedParameterJdbcTemplate postgresNamedParameterJdbcTemplate;
 
     @Autowired
     public TemplateRepository(@Qualifier("oracleJdbcTemplate") NamedParameterJdbcTemplate oracleNamedParameterJdbcTemplate,
+                              @Qualifier("oracleJdbcTemplateQA") NamedParameterJdbcTemplate oracleQaNamedParameterJdbcTemplate,
                               @Qualifier("postgresJdbcTemplate") NamedParameterJdbcTemplate postgresNamedParameterJdbcTemplate) {
         this.oracleNamedParameterJdbcTemplate = oracleNamedParameterJdbcTemplate;
+        this.oracleQaNamedParameterJdbcTemplate = oracleQaNamedParameterJdbcTemplate;
         this.postgresNamedParameterJdbcTemplate = postgresNamedParameterJdbcTemplate;
     }
 
@@ -54,7 +57,7 @@ public class TemplateRepository {
         return userId;
     }
 
-    public List<Template> searchForTemplates(String title, String findPartialTitleMatches, String type, String author, String version, String username) {
+    public List<Template> searchForTemplates(String templateId, String title, String findPartialTitleMatches, String type, String author, String version, String username) {
 
         MapSqlParameterSource params = new MapSqlParameterSource();
 
@@ -65,44 +68,49 @@ public class TemplateRepository {
 
         StringBuilder stringBuilder = new StringBuilder(baseQuery);
 
-        if (title != null && !title.isBlank()) {
-            if ("true".equalsIgnoreCase(findPartialTitleMatches)) {
-                params.addValue("title", "%" + title.strip().toUpperCase() + "%");
-            } else {
-                params.addValue("title", title.strip().toUpperCase());
+        if (templateId != null && !templateId.isBlank()) {
+            params.addValue("templateId", templateId.strip());
+            stringBuilder.append(" AND t.TEMPLATES_ID = :templateId");
+        } else {
+            if (title != null && !title.isBlank()) {
+                if ("true".equalsIgnoreCase(findPartialTitleMatches)) {
+                    params.addValue("title", "%" + title.strip().toUpperCase() + "%");
+                } else {
+                    params.addValue("title", title.strip().toUpperCase());
+                }
+                stringBuilder.append(" AND UPPER(TRIM(t.TITLE)) LIKE :title");
             }
-            stringBuilder.append(" AND UPPER(TRIM(t.TITLE)) LIKE :title");
-        }
 
-        if (type != null && !type.isBlank()) {
-            Integer templateTypeId = getTemplateTypeId(TemplateType.valueOf(type.strip().toUpperCase()));
-            params.addValue("templateTypeId", templateTypeId);
-            stringBuilder.append(" AND t.TEMPLATE_TYPE_ID = :templateTypeId");
-        }
+            if (type != null && !type.isBlank()) {
+                Integer templateTypeId = getTemplateTypeId(TemplateType.valueOf(type.strip().toUpperCase()));
+                params.addValue("templateTypeId", templateTypeId);
+                stringBuilder.append(" AND t.TEMPLATE_TYPE_ID = :templateTypeId");
+            }
 
-        if (author != null && !author.isBlank()) {
-            params.addValue("author", author);
-            stringBuilder.append(" AND t.AUTHOR = :author");
-        }
+            if (author != null && !author.isBlank()) {
+                params.addValue("author", author);
+                stringBuilder.append(" AND t.AUTHOR = :author");
+            }
 
-        if (version != null && !version.isBlank()) {
-            params.addValue("version", version);
-            stringBuilder.append(" AND t.VERSION = :version");
-        }
+            if (version != null && !version.isBlank()) {
+                params.addValue("version", version);
+                stringBuilder.append(" AND t.VERSION = :version");
+            }
 
-        if (username != null && !username.isBlank()) {
-            params.addValue("username", username);
-            stringBuilder.append(" AND u.USERNAME = :username");
+            if (username != null && !username.isBlank()) {
+                params.addValue("username", username);
+                stringBuilder.append(" AND u.USERNAME = :username");
 
-            // to validate that the username exists
-            Long userId = getUserId(username);
+                // to validate that the username exists
+                Long userId = getUserId(username);
 
 //            params.addValue("userId", userId);
 //            stringBuilder.append(" AND USER_ID = :userId");
-        }
+            }
 
-        // TODO: implement pagination offset
-        stringBuilder.append(" AND ROWNUM <= 100 ORDER BY t.TITLE ASC");
+            // TODO: implement pagination offset
+            stringBuilder.append(" AND ROWNUM <= 100 ORDER BY t.TITLE ASC");
+        }
 
         return oracleNamedParameterJdbcTemplate.query(stringBuilder.toString(), params, TEMPLATE_SEARCH_ROW_MAPPER);
     }
@@ -362,8 +370,8 @@ public class TemplateRepository {
         template.setAuthor(rs.getString("AUTHOR"));
         template.setVersion(rs.getString("VERSION"));
         template.setTitle(rs.getString("TITLE"));
-        template.setCreatedOn(rs.getString("CREATE_DT"));           // TODO: check if Date parsing works. Right now, I'm inserting SYSDATE, not these
-        template.setUpdatedOn(rs.getString("LAST_MOD_DT"));
+        template.setCreatedOn(rs.getString("CREATE_DT").substring(0, 10));          // 2018-10-11 06:45:35
+        template.setUpdatedOn(rs.getString("LAST_MOD_DT").substring(0, 10));
         template.setUsername(rs.getString("USERNAME"));
 
         return template;
@@ -376,8 +384,8 @@ public class TemplateRepository {
         template.setAuthor(rs.getString("AUTHOR"));
         template.setVersion(rs.getString("VERSION"));
         template.setTitle(rs.getString("TITLE"));
-        template.setCreatedOn(rs.getString("CREATE_DT"));           // TODO: check if Date parsing works. Right now, I'm inserting SYSDATE, not these
-        template.setUpdatedOn(rs.getString("LAST_MOD_DT"));
+        template.setCreatedOn(rs.getString("CREATE_DT").substring(0, 10));          // 2018-10-11 06:45:35
+        template.setUpdatedOn(rs.getString("LAST_MOD_DT").substring(0, 10));
 
         return template;
     };

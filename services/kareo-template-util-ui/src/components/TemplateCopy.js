@@ -285,7 +285,7 @@ function TemplateCopy() {
                     </Toolbar>
                 </AppBar>
             </div>
-            <div className={classes.container}>
+            <form className={classes.container}>
                 <div>
                     <FormControl>
                         <InputLabel htmlFor="from-environment">From</InputLabel>
@@ -369,6 +369,7 @@ function TemplateCopy() {
                         name="fromUsername"
                         onChange={handleInputValueChange}
                         margin="normal"
+                        autoFocus
                         disabled={fromType !== 'user'}
                     />
                 </div>
@@ -425,6 +426,7 @@ function TemplateCopy() {
                 </div>
                 <div className={classes.buttons}>
                     <Button
+                        type="submit"
                         color="primary"
                         variant="contained"
                         fullWidth={false}
@@ -457,7 +459,7 @@ function TemplateCopy() {
                 {/*    />*/}
                 {/*</Snackbar>*/}
 
-            </div>
+            </form>
 
 
             <div className={classes.responseContainer}>

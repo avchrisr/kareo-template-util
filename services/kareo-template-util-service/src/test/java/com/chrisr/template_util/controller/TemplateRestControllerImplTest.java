@@ -26,37 +26,52 @@ public class TemplateRestControllerImplTest {
 
     @Test(expected = BadRequestException.class)
     public void searchForTemplates_NoParams_ShouldThrowBadRequestException() {
-        templateRestController.searchForTemplates("", "", "", "", "", "");
+        templateRestController.searchForTemplates("","", "", "", "", "", "", "");
     }
 
     @Test(expected = BadRequestException.class)
     public void searchForTemplates_SystemTypeWithUsername_ShouldThrowBadRequestException() {
-        templateRestController.searchForTemplates("", "","SYSTEM", "", "","amy@kareo.com");
+        templateRestController.searchForTemplates("dev","", "","SYSTEM", "", "","amy@kareo.com", "");
     }
 
     @Test(expected = BadRequestException.class)
     public void searchForTemplates_UserTypeWithoutUsername_ShouldThrowBadRequestException() {
-        templateRestController.searchForTemplates("", "", "USER", "", "", "");
+        templateRestController.searchForTemplates("dev","", "", "USER", "", "", "", "");
     }
 
     @Test(expected = BadRequestException.class)
     public void searchForTemplates_TitleWithTwoCharacters_ShouldThrowBadRequestException() {
-        templateRestController.searchForTemplates("BE", "", "", "", "", "");
+        templateRestController.searchForTemplates("dev","BE", "", "", "", "", "", "");
     }
 
     @Test(expected = BadRequestException.class)
     public void searchForTemplates_NoTitleWithPartialTitleMatchOptionOn_ShouldThrowBadRequestException() {
-        templateRestController.searchForTemplates("", "true", "", "", "", "");
+        templateRestController.searchForTemplates("dev","", "true", "", "", "", "", "");
     }
 
     @Test(expected = BadRequestException.class)
     public void searchForTemplates_findPartialTitleMatchesOptionValueOtherThanTrueOrFalse_ShouldThrowBadRequestException() {
-        templateRestController.searchForTemplates("Acne", "invalidValue", "", "", "", "");
+        templateRestController.searchForTemplates("dev","Acne", "invalidValue", "", "", "", "", "");
+    }
+
+    @Test(expected = BadRequestException.class)
+    public void searchForTemplates_invalidTemplateId_ShouldThrowBadRequestException() {
+        templateRestController.searchForTemplates("dev","Acne", "invalidValue", "", "", "", "", "123A");
+    }
+
+    @Test(expected = BadRequestException.class)
+    public void searchForTemplates_MissingEnvironment_ShouldThrowBadRequestException() {
+        templateRestController.searchForTemplates("","Med Spa", "", "USER", "", "", "amy@kareo.com", "123");
+    }
+
+    @Test
+    public void searchForTemplates_ValidTemplateIdRequest_ShouldSucceed() {
+        templateRestController.searchForTemplates("dev","Med Spa", "", "USER", "", "", "amy@kareo.com", "123");
     }
 
     @Test
     public void searchForTemplates_ValidRequest_ShouldSucceed() {
-        templateRestController.searchForTemplates("Med Spa", "", "USER", "", "", "amy@kareo.com");
+        templateRestController.searchForTemplates("dev","Med Spa", "", "USER", "", "", "amy@kareo.com", "");
     }
 
     @Test(expected = BadRequestException.class)
@@ -163,9 +178,19 @@ public class TemplateRestControllerImplTest {
     }
 
     @Test(expected = BadRequestException.class)
+    public void updateTemplateMetadata_NoEnvironmentProvided_ShouldThrowBadRequestException() {
+
+        UpdateTemplateMetadataRequest updateTemplateMetadataRequest = new UpdateTemplateMetadataRequest();
+        updateTemplateMetadataRequest.setCurrentTemplateId(100L);
+        updateTemplateMetadataRequest.setCurrentTemplateTitle("Med Spa v1");
+        templateRestController.updateTemplateMetadata(updateTemplateMetadataRequest);
+    }
+
+    @Test(expected = BadRequestException.class)
     public void updateTemplateMetadata_NoCurrentTemplateIdProvided_ShouldThrowBadRequestException() {
 
         UpdateTemplateMetadataRequest updateTemplateMetadataRequest = new UpdateTemplateMetadataRequest();
+        updateTemplateMetadataRequest.setEnvironment("dev");
         updateTemplateMetadataRequest.setCurrentTemplateTitle("Med Spa v1");
         templateRestController.updateTemplateMetadata(updateTemplateMetadataRequest);
     }
@@ -174,6 +199,7 @@ public class TemplateRestControllerImplTest {
     public void updateTemplateMetadata_NoCurrentTemplateTitleProvided_ShouldThrowBadRequestException() {
 
         UpdateTemplateMetadataRequest updateTemplateMetadataRequest = new UpdateTemplateMetadataRequest();
+        updateTemplateMetadataRequest.setEnvironment("dev");
         updateTemplateMetadataRequest.setCurrentTemplateId(100L);
         templateRestController.updateTemplateMetadata(updateTemplateMetadataRequest);
     }
@@ -182,6 +208,7 @@ public class TemplateRestControllerImplTest {
     public void updateTemplateMetadata_NoNewInfoProvided_ShouldThrowBadRequestException() {
 
         UpdateTemplateMetadataRequest updateTemplateMetadataRequest = new UpdateTemplateMetadataRequest();
+        updateTemplateMetadataRequest.setEnvironment("dev");
         updateTemplateMetadataRequest.setCurrentTemplateId(100L);
         updateTemplateMetadataRequest.setCurrentTemplateTitle("Med Spa v1");
         templateRestController.updateTemplateMetadata(updateTemplateMetadataRequest);
@@ -191,6 +218,7 @@ public class TemplateRestControllerImplTest {
     public void updateTemplateMetadata_ValidRequest_ShouldSucceed() {
 
         UpdateTemplateMetadataRequest updateTemplateMetadataRequest = new UpdateTemplateMetadataRequest();
+        updateTemplateMetadataRequest.setEnvironment("dev");
         updateTemplateMetadataRequest.setCurrentTemplateId(100L);
         updateTemplateMetadataRequest.setCurrentTemplateTitle("Med Spa v1");
         updateTemplateMetadataRequest.setNewTitle("Med Spa v2");

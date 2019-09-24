@@ -14,12 +14,16 @@ import java.util.List;
 public interface TemplateRestController {
 
 	@GetMapping
-	ResponseEntity<List<Template>> searchForTemplates(@RequestParam(required = false) String title,
-		 @RequestParam(name = "find-partial-title-matches", required = false) String findPartialTitleMatches,
-		 @RequestParam(required = false) String type,
-		 @RequestParam(required = false) String author,
-		 @RequestParam(required = false) String version,
-		 @RequestParam(required = false) String username);
+	ResponseEntity<List<Template>> searchForTemplates(
+        @RequestParam String environment,
+        @RequestParam(required = false) String title,
+        @RequestParam(name = "findPartialTitleMatches", required = false) String findPartialTitleMatches,
+        @RequestParam(required = false) String type,
+        @RequestParam(required = false) String author,
+        @RequestParam(required = false) String version,
+        @RequestParam(required = false) String username,
+        @RequestParam(required = false) String templateId
+    );
 
 	@PostMapping("/copy-templates")
 	ResponseEntity<ApiResponse> copyTemplates(@Valid @RequestBody CopyTemplatesRequest copyTemplatesRequest);
@@ -27,7 +31,4 @@ public interface TemplateRestController {
 	@PostMapping("/update-template-metadata")
 	ResponseEntity<ApiResponse> updateTemplateMetadata(@Valid @RequestBody UpdateTemplateMetadataRequest updateTemplateMetadataRequest);
 
-
-	@PostMapping("/databaseDemo")
-	ResponseEntity<ApiResponse> databaseDemo(@RequestBody CopyTemplatesRequest copyTemplatesRequest);
 }

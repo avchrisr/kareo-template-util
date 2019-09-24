@@ -67,15 +67,17 @@ export default function TemplateSearch() {
 
 
     const {
+        searchTemplateEnv, setSearchTemplateEnv,
         type, setType,
         title, setTitle,
         author, setAuthor,
         version, setVersion,
         username, setUsername,
+        templateId, setTemplateId,
         isUsernameFieldDisabled, setUsernameFieldDisabled,
         isPartialTitleMatch, setPartialTitleMatch,
         isSearchButtonDisabled, setSearchButtonDisabled,
-        errorMessage, setErrorMessage,
+        errorMessages, setErrorMessages,
         searchResults, setSearchResults,
         page, setPage, rowsPerPage, setRowsPerPage } = useContext(TemplateContext);
 
@@ -93,6 +95,9 @@ export default function TemplateSearch() {
     const handleInputValueChange = (event) => {
 
         switch (event.target.name) {
+            case 'searchTemplateEnv':
+                setSearchTemplateEnv(event.target.value);
+                break;
             case 'type':
                 setType(event.target.value);
                 if (event.target.value === 'system') {
@@ -115,6 +120,9 @@ export default function TemplateSearch() {
             case 'username':
                 setUsername(event.target.value);
                 break;
+            case 'templateId':
+                setTemplateId(event.target.value);
+                break;
             case 'isPartialTitleMatch':
                 setPartialTitleMatch(!isPartialTitleMatch);
                 break;
@@ -123,18 +131,29 @@ export default function TemplateSearch() {
                 break;
         }
 
-        setErrorMessage('');
+        setErrorMessages([]);
     };
 
     const handleSearchSubmit = async (event) => {
         event.preventDefault();
 
         // INPUT VALIDATION
+        const errorMsgs = [];
+
+        if (_.isEmpty(searchTemplateEnv)) {
+            errorMsgs.push('Please specify the environment');
+        }
+
         if (_.isEmpty(title) &&
             _.isEmpty(author) &&
             _.isEmpty(version) &&
-            _.isEmpty(username)) {
-            setErrorMessage('At least one field is required in order to search');
+            _.isEmpty(username) &&
+            _.isEmpty(templateId)) {
+            errorMsgs.push('At least one field is required in order to search');
+        }
+
+        if (errorMsgs.length > 0) {
+            setErrorMessages(errorMsgs);
             return;
         }
 
@@ -144,6 +163,15 @@ export default function TemplateSearch() {
         let url = `http://${REACT_APP_NGINX_HOSTNAME}:${REACT_APP_NGINX_PORT}/api/${REACT_APP_API_VERSION}/templates`;
         let queryCount = 0;
 
+        if (searchTemplateEnv) {
+            if (queryCount === 0) {
+                url += '?';
+            } else {
+                url += '&';
+            }
+            queryCount += 1;
+            url += `environment=${searchTemplateEnv}`
+        }
         if (title) {
             if (queryCount === 0) {
                 url += '?';
@@ -160,7 +188,7 @@ export default function TemplateSearch() {
                 url += '&';
             }
             queryCount += 1;
-            url += `find-partial-title-matches=${isPartialTitleMatch}`
+            url += `findPartialTitleMatches=${isPartialTitleMatch}`
         }
         if (type === 'system' || type === 'user') {
             if (queryCount === 0) {
@@ -198,6 +226,15 @@ export default function TemplateSearch() {
             queryCount += 1;
             url += `username=${username}`
         }
+        if (templateId) {
+            if (queryCount === 0) {
+                url += '?';
+            } else {
+                url += '&';
+            }
+            queryCount += 1;
+            url += `templateId=${templateId}`
+        }
 
         console.log(`## URL = ${url}`);
 
@@ -226,7 +263,7 @@ export default function TemplateSearch() {
             console.log(err.response);
 
             const errorMessage = _.get(err, 'response.data.message') || _.get(err, 'message');
-            setErrorMessage(errorMessage);
+            setErrorMessages([errorMessage]);
 
             // // TODO: below pseudo search result is for demonstrative purpose (when an error occurs). remove this pseudo data later
             //
@@ -286,7 +323,31 @@ export default function TemplateSearch() {
                 </AppBar>
             </div>
 
-            <div className={classes.container}>
+            <form className={classes.container}>
+                <div>
+                    <FormControl>
+                        <InputLabel htmlFor="search-template-environment">Environment</InputLabel>
+                        <Select
+                            // native
+                            value={searchTemplateEnv}
+                            onChange={handleInputValueChange}
+                            // inputProps={{
+                            //     name: 'age',
+                            //     id: 'age-simple',
+                            // }}
+                            name="searchTemplateEnv"
+                        >
+                            {/* <option value="dev">DEV</option>
+                                <option value="qa">QA/TEST</option>
+                                <option value="prod">PRODUCTION</option> */}
+                            <MenuItem value="dev">DEV</MenuItem>
+                            <MenuItem value="qa">QA/TEST</MenuItem>
+                            <MenuItem value="prod">PRODUCTION</MenuItem>
+                        </Select>
+                    </FormControl>
+                </div>
+                <div/>
+                <div/>
                 <div>
                     <FormControl style={{marginTop: '1.5rem'}}>
                         <FormLabel>Template Type</FormLabel>
@@ -323,6 +384,7 @@ export default function TemplateSearch() {
                            label="Title"
                            value={title}
                            name="title"
+                           autoFocus
                            onChange={handleInputValueChange}
                            margin="normal"
                     />
@@ -350,34 +412,41 @@ export default function TemplateSearch() {
                            onChange={handleInputValueChange}
                            margin="normal"
                     />
+                    <TextField
+                        label="Template ID"
+                        helperText="If Template ID is provided, it will ignore all other search parameters"
+                        value={templateId}
+                        name="templateId"
+                        onChange={handleInputValueChange}
+                        margin="normal"
+                    />
                 </div>
                 <div/>
 
                 <div>
-                    <Button style={{marginTop: '30px'}}
-                            color="primary"
-                            variant="contained"
-                            fullWidth={false}
-                            disabled={isSearchButtonDisabled}
-                            onClick={handleSearchSubmit}
+                    <Button
+                        type="submit"
+                        style={{marginTop: '30px'}}
+                        color="primary"
+                        variant="contained"
+                        fullWidth={false}
+                        disabled={isSearchButtonDisabled}
+                        onClick={handleSearchSubmit}
                     >Search</Button>
                 </div>
                 <div/>
                 <div/>
-
-
-            </div>
+            </form>
 
             <div className={classes.responseContainer}>
                 {/*{isSearchButtonDisabled && <CircularProgress className={classes.progress} />}*/}
                 {isSearchButtonDisabled && <LinearProgress className={classes.searchResults} variant="query" />}
 
-                {errorMessage.length > 0 &&
-                <SnackbarContent
+                {errorMessages.length > 0 && <div className={classes.errorMessage}>{errorMessages.map((errorMessage, index) => (<SnackbarContent
                     className={classes.errorSnackBar}
                     message={errorMessage}
-                />
-                }
+                    key={index}
+                />))}</div>}
             </div>
 
             <div className={classes.divider}></div>

@@ -78,6 +78,7 @@ export default function SignUp() {
     const [password, setPassword] = useState('');
     const [errorMessages, setErrorMessages] = useState([]);
     const [successMessage, setSuccessMessage] = useState('');
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const handleInputValueChange = (event) => {
         switch (event.target.name) {
@@ -116,6 +117,8 @@ export default function SignUp() {
             setErrorMessages(errorMessages);
             return;
         }
+
+        setIsSubmitting(true);
 
         const url = `http://${REACT_APP_NGINX_HOSTNAME}:${REACT_APP_NGINX_PORT}/api/${REACT_APP_API_VERSION}/auth/register`;
 
@@ -163,6 +166,8 @@ export default function SignUp() {
                 setErrorMessages([errorMessage]);
             }
 
+            setIsSubmitting(false);
+
         });
 
         if (res || REACT_APP_STATIC_SITE_DEMO_MODE === 'true') {
@@ -176,6 +181,7 @@ export default function SignUp() {
             setSuccessMessage(`Successfully registered user. Redirecting to the login page...`);
 
             setTimeout(() => {
+                setIsSubmitting(false);
                 window.location.replace('/login');
             }, 2500);
         }
@@ -267,6 +273,7 @@ export default function SignUp() {
                         color="primary"
                         className={classes.submit}
                         onClick={handleSignUp}
+                        disabled={isSubmitting}
                     >
                         Sign Up
                     </Button>

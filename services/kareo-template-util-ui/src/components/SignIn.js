@@ -75,6 +75,7 @@ export default function SignIn() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [errorMessages, setErrorMessages] = useState([]);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const { authenticated, setAuthenticated, authBody, setAuthBody } = useContext(RootContext);
 
@@ -110,6 +111,8 @@ export default function SignIn() {
             setErrorMessages(errorMessages);
             return;
         }
+
+        setIsSubmitting(true);
 
         const url = `http://${REACT_APP_NGINX_HOSTNAME}:${REACT_APP_NGINX_PORT}/api/${REACT_APP_API_VERSION}/auth/login`;
 
@@ -176,6 +179,8 @@ export default function SignIn() {
 
             setAuthenticated('true');
             setAuthBody(JSON.stringify(res.data));
+
+            setIsSubmitting(false);
             navigate('/');
         }
     };
@@ -229,6 +234,7 @@ export default function SignIn() {
                         color="primary"
                         className={classes.submit}
                         onClick={handleSignIn}
+                        disabled={isSubmitting}
                     >
                         Sign In
                     </Button>

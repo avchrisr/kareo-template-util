@@ -91,7 +91,9 @@ export default function TemplateUpdate() {
     console.log(authBodyJson.jwt);
 
 
-    const { currentTemplateId, setCurrentTemplateId,
+    const {
+        updateTemplateEnv, setUpdateTemplateEnv,
+        currentTemplateId, setCurrentTemplateId,
         currentTemplateTitle, setCurrentTemplateTitle,
         newTemplateTitle, setNewTemplateTitle,
         newTemplateAuthor, setNewTemplateAuthor,
@@ -104,6 +106,9 @@ export default function TemplateUpdate() {
     const handleInputValueChange = (event) => {
 
         switch (event.target.name) {
+            case 'updateTemplateEnv':
+                setUpdateTemplateEnv(event.target.value);
+                break;
             case 'currentTemplateId':
                 setCurrentTemplateId(event.target.value);
                 break;
@@ -137,6 +142,10 @@ export default function TemplateUpdate() {
         // INPUT VALIDATION
         const errorMessages = [];
 
+        if (_.isEmpty(updateTemplateEnv)) {
+            errorMessages.push('Please specify the environment');
+        }
+
         if (_.isEmpty(currentId) || _.isEmpty(currentTitle)) {
             errorMessages.push('Current Template ID and Current Template Title are required.');
         }
@@ -161,6 +170,7 @@ export default function TemplateUpdate() {
         const url = `http://${REACT_APP_NGINX_HOSTNAME}:${REACT_APP_NGINX_PORT}/api/${REACT_APP_API_VERSION}/templates/update-template-metadata`;
 
         const requestBody = {
+            environment: updateTemplateEnv,
             currentTemplateId: currentId,
             currentTemplateTitle: currentTitle,
             newTitle,
@@ -209,6 +219,7 @@ export default function TemplateUpdate() {
     };
 
     const handleReset = () => {
+        setUpdateTemplateEnv('dev');
         setCurrentTemplateId('');
         setCurrentTemplateTitle('');
         setNewTemplateTitle('');
@@ -235,7 +246,30 @@ export default function TemplateUpdate() {
                 </AppBar>
             </div>
 
-            <div className={classes.container}>
+            <form className={classes.container}>
+                <div>
+                    <FormControl>
+                        <InputLabel htmlFor="update-template-environment">Environment</InputLabel>
+                        <Select
+                            // native
+                            value={updateTemplateEnv}
+                            onChange={handleInputValueChange}
+                            // inputProps={{
+                            //     name: 'age',
+                            //     id: 'age-simple',
+                            // }}
+                            name="updateTemplateEnv"
+                        >
+                            {/* <option value="dev">DEV</option>
+                                <option value="qa">QA/TEST</option>
+                                <option value="prod">PRODUCTION</option> */}
+                            <MenuItem value="dev">DEV</MenuItem>
+                            <MenuItem value="qa">QA/TEST</MenuItem>
+                            <MenuItem value="prod">PRODUCTION</MenuItem>
+                        </Select>
+                    </FormControl>
+                </div>
+                <div/>
                 <div>
                     <TextField
                         label="Current Template ID"
@@ -245,6 +279,7 @@ export default function TemplateUpdate() {
                         onChange={handleInputValueChange}
                         margin="normal"
                         required
+                        autoFocus
                     />
                     <TextField style={{display: 'block'}}
                                label="Current Template Title"
@@ -283,6 +318,7 @@ export default function TemplateUpdate() {
 
                 <div className={classes.buttons}>
                     <Button
+                        type="submit"
                         color="primary"
                         variant="contained"
                         fullWidth={false}
@@ -298,7 +334,7 @@ export default function TemplateUpdate() {
                         onClick={handleReset}
                     >Reset</Button>
                 </div>
-            </div>
+            </form>
 
             <div className={classes.responseContainer}>
                 {/*<div className={classes.divider}></div>*/}
