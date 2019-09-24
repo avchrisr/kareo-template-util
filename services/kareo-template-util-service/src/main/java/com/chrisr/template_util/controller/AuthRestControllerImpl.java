@@ -46,10 +46,8 @@ public class AuthRestControllerImpl implements AuthRestController {
 
     @Override
     public ResponseEntity<JwtAuthResponse> authenticateUserAndCreateJWT(@Valid @RequestBody LoginRequest loginRequest) {
-
-        // TODO: I could do my own custom auth here instead of relying/using Spring-specific AuthenticationManager??
-        //  I could do the user lookup myself here,
-        //  but will not be able to set SecurityContextHolder?
+        // I _could_ implement my own custom authentication approach, but I still need the Spring Security Authentication object
+        // in order to be able to set the SecurityContextHolder so I can retrieve the logged in user anywhere globally
 
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
@@ -63,7 +61,9 @@ public class AuthRestControllerImpl implements AuthRestController {
         // we’ll now be able to check if the current user is authenticated – using securityContext.getAuthentication().isAuthenticated()
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        String jwt = jwtTokenProvider.generateToken(authentication);
+        // look up user and include userId in the JWT header
+        User user = userService.getUserByUsername(loginRequest.getUsername());
+        String jwt = jwtTokenProvider.generateToken(authentication, user);
         return ResponseEntity.ok().body(new JwtAuthResponse(jwt));
     }
 }

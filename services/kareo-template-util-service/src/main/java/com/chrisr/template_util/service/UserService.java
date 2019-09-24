@@ -14,9 +14,6 @@ import java.util.List;
 @Service
 public class UserService {
 
-//    @Autowired
-//	RoleRepository roleRepository;
-
     private final PasswordEncoder passwordEncoder;
     private final UserRepository userRepository;
 
@@ -25,7 +22,6 @@ public class UserService {
         this.passwordEncoder = passwordEncoder;
         this.userRepository = userRepository;
     }
-
 
     @Transactional
     public User registerUser(SignUpRequest signUpRequest) {
@@ -46,12 +42,6 @@ public class UserService {
         user.setFirstname(signUpRequest.getFirstname());
         user.setLastname(signUpRequest.getLastname());
 
-
-        //		Role userRole = roleRepository.findByName(RoleName.ROLE_USER)
-//				.orElseThrow(() -> new AppException("User Role not set."));
-//		user.setRoles(Collections.singleton(userRole));
-
-
         addUser(user);
         return user;
     }
@@ -64,6 +54,11 @@ public class UserService {
     @Transactional(readOnly = true)
     public User getUserById(long id) {
         return userRepository.getUserById(id);
+    }
+
+    @Transactional(readOnly = true)
+    public User getUserByUsername(String username) {
+        return userRepository.getUserByUsername(username);
     }
 
     @Transactional
