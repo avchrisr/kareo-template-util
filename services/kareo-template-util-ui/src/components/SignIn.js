@@ -149,6 +149,8 @@ export default function SignIn() {
                 errorMessage = 'Invalid user credential';
             }
 
+            setIsSubmitting(false);
+
             // TODO: implement static site demo mode
             if (REACT_APP_STATIC_SITE_DEMO_MODE === 'true') {
                 setAuthenticated('true');

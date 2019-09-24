@@ -64,6 +64,7 @@ consists of following dockerized components:
 
 ## TO DO
 
+* copy templates page currently supports DEV environments only
 * pagination / offset / limit on search results
     * change return type from List of Templates to Reponse wrapper with list of templates inside, along with other metadata such as pageNumber, resultCount, etc?
 * login/logout workflow in React app

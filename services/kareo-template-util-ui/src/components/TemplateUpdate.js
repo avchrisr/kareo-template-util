@@ -18,14 +18,6 @@ const REACT_APP_API_VERSION = process.env.REACT_APP_API_VERSION || 'v1';
 
 const isOnlyNumbersRegEx = /^\d+$/;
 
-
-// TODO:
-//  - signin and signout page interaction
-//  - refine update template page UI
-//  - get it to actually call BE service
-
-
-
 const useStyles = makeStyles({
     container: {
         display: 'grid',

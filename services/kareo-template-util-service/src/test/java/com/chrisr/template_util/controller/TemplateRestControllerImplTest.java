@@ -31,12 +31,7 @@ public class TemplateRestControllerImplTest {
 
     @Test(expected = BadRequestException.class)
     public void searchForTemplates_SystemTypeWithUsername_ShouldThrowBadRequestException() {
-        templateRestController.searchForTemplates("dev","", "","SYSTEM", "", "","amy@kareo.com", "");
-    }
-
-    @Test(expected = BadRequestException.class)
-    public void searchForTemplates_UserTypeWithoutUsername_ShouldThrowBadRequestException() {
-        templateRestController.searchForTemplates("dev","", "", "USER", "", "", "", "");
+        templateRestController.searchForTemplates("dev","therapy", "","SYSTEM", "", "","amy@kareo.com", "");
     }
 
     @Test(expected = BadRequestException.class)
@@ -62,6 +57,16 @@ public class TemplateRestControllerImplTest {
     @Test(expected = BadRequestException.class)
     public void searchForTemplates_MissingEnvironment_ShouldThrowBadRequestException() {
         templateRestController.searchForTemplates("","Med Spa", "", "USER", "", "", "amy@kareo.com", "123");
+    }
+
+    @Test(expected = BadRequestException.class)
+    public void searchForTemplates_InvalidEnvironmentName_ShouldThrowBadRequestException() {
+        templateRestController.searchForTemplates("myCustomEnv","Med Spa", "", "USER", "", "", "amy@kareo.com", "");
+    }
+
+    @Test
+    public void searchForTemplates_UserTypeWithoutUsername_ShouldSucceed() {
+        templateRestController.searchForTemplates("dev","therapy", "", "USER", "", "", "", "");
     }
 
     @Test

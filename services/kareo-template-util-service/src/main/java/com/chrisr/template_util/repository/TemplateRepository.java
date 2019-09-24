@@ -1,5 +1,6 @@
 package com.chrisr.template_util.repository;
 
+import com.chrisr.template_util.exception.AppException;
 import com.chrisr.template_util.repository.entity.template.Template;
 import com.chrisr.template_util.repository.entity.template.TemplateCarePlan;
 import com.chrisr.template_util.repository.entity.template.TemplateSection;
@@ -57,8 +58,9 @@ public class TemplateRepository {
         return userId;
     }
 
-    public List<Template> searchForTemplates(String templateId, String title, String findPartialTitleMatches, String type, String author, String version, String username) {
+    public List<Template> searchForTemplates(String environment, String templateId, String title, String findPartialTitleMatches, String type, String author, String version, String username) {
 
+        NamedParameterJdbcTemplate oracleJdbcTemplate = getOracleJdbcTemplateForEnvironment(environment);
         MapSqlParameterSource params = new MapSqlParameterSource();
 
         String baseQuery = "SELECT t.TEMPLATES_ID, tt.NAME AS TYPE, t.TITLE, t.AUTHOR, t.VERSION, t.CREATE_DT, t.LAST_MOD_DT, u.USERNAME " +
@@ -112,7 +114,7 @@ public class TemplateRepository {
             stringBuilder.append(" AND ROWNUM <= 100 ORDER BY t.TITLE ASC");
         }
 
-        return oracleNamedParameterJdbcTemplate.query(stringBuilder.toString(), params, TEMPLATE_SEARCH_ROW_MAPPER);
+        return oracleJdbcTemplate.query(stringBuilder.toString(), params, TEMPLATE_SEARCH_ROW_MAPPER);
     }
 
     public Integer getTemplateCount(String templateType, Long userId, long[] templateIdsFromRequest) {
@@ -292,6 +294,8 @@ public class TemplateRepository {
 
     public void updateTemplateMetadata(Template existingTemplate, UpdateTemplateMetadataRequest updateTemplateMetadataRequest) {
 
+        NamedParameterJdbcTemplate oracleJdbcTemplate = getOracleJdbcTemplateForEnvironment(updateTemplateMetadataRequest.getEnvironment());
+
         MapSqlParameterSource params = new MapSqlParameterSource();
         params.addValue("templateId", updateTemplateMetadataRequest.getCurrentTemplateId());
 
@@ -313,7 +317,7 @@ public class TemplateRepository {
             params.addValue("version", existingTemplate.getVersion());
         }
 
-        oracleNamedParameterJdbcTemplate.update(UPDATE_TEMPLATE_METADATA_QUERY, params);
+        oracleJdbcTemplate.update(UPDATE_TEMPLATE_METADATA_QUERY, params);
     }
 
     public void deleteTemplate(long templateId) {
@@ -348,6 +352,21 @@ public class TemplateRepository {
 
     public Long getNextPostgresSequence() {
         return postgresNamedParameterJdbcTemplate.queryForObject(GET_NEXT_POSTGRES_SEQUENCE, new MapSqlParameterSource(), Long.class);
+    }
+
+    private NamedParameterJdbcTemplate getOracleJdbcTemplateForEnvironment(String environment) {
+        if ("dev".equalsIgnoreCase(environment)) {
+            return oracleNamedParameterJdbcTemplate;
+        } else if ("qa".equalsIgnoreCase(environment)) {
+            return oracleQaNamedParameterJdbcTemplate;
+        } else if ("prod".equalsIgnoreCase(environment)) {
+            // TODO: setting it to QA env for now
+            return oracleQaNamedParameterJdbcTemplate;
+        } else {
+            String errorMessage = String.format("Unrecognized environment = %s", environment);
+            logger.error(errorMessage);
+            throw new AppException(errorMessage);
+        }
     }
 
     // ---------------------------

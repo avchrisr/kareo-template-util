@@ -141,7 +141,7 @@ export default function TemplateSearch() {
         const errorMsgs = [];
 
         if (_.isEmpty(searchTemplateEnv)) {
-            errorMsgs.push('Please specify the environment');
+            errorMsgs.push('Please specify the environment.');
         }
 
         if (_.isEmpty(title) &&
@@ -149,7 +149,7 @@ export default function TemplateSearch() {
             _.isEmpty(version) &&
             _.isEmpty(username) &&
             _.isEmpty(templateId)) {
-            errorMsgs.push('At least one field is required in order to search');
+            errorMsgs.push('At least one field is required in order to search.');
         }
 
         if (errorMsgs.length > 0) {

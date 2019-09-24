@@ -50,10 +50,7 @@ public class TemplateRestControllerImpl implements TemplateRestController {
         // CAVEAT
         // - if templateId is provided, it will be used to retrieve the matching template, and ignore all other parameters
 
-        if (environment == null || environment.isBlank()) {
-            String errorMessage = "Environment must be specified.";
-            throw new BadRequestException(errorMessage);
-        }
+        validateEnvironmentName(environment);
 
         if ((title == null || title.isBlank()) &&
             (type == null || type.isBlank()) &&
@@ -78,11 +75,6 @@ public class TemplateRestControllerImpl implements TemplateRestController {
         }
 
         if ("USER".equalsIgnoreCase(type)) {
-            if (username == null || username.isBlank()) {
-                String errorMessage = "When the type is USER, username must be provided.";
-                throw new BadRequestException(errorMessage);
-            }
-
             // change the value to "CUSTOM", which is used in BE that's equivalent to "USER" in FE
             type = "CUSTOM";
         }
@@ -104,7 +96,7 @@ public class TemplateRestControllerImpl implements TemplateRestController {
 
         // TODO: wrap results in a response object, which includes "totalCount", "count", "pageSize", "page"
 
-        List<Template> results = templateService.searchForTemplates(templateId, title, findPartialTitleMatches, type, author, version, username);
+        List<Template> results = templateService.searchForTemplates(environment, templateId, title, findPartialTitleMatches, type, author, version, username);
 
         SearchForTemplateRequest searchForTemplateRequest = new SearchForTemplateRequest();
         searchForTemplateRequest.setEnvironment(environment);
@@ -266,9 +258,8 @@ public class TemplateRestControllerImpl implements TemplateRestController {
         System.out.println("---------------------");
         System.out.println(updateTemplateMetadataRequest.toString());
 
-        if (updateTemplateMetadataRequest.getEnvironment() == null || updateTemplateMetadataRequest.getEnvironment().isBlank()) {
-            throw new BadRequestException("Environment must be specified.");
-        }
+        validateEnvironmentName(updateTemplateMetadataRequest.getEnvironment());
+
         if (updateTemplateMetadataRequest.getCurrentTemplateId() < 0) {
             throw new BadRequestException("Current Template ID is required.");
         }
@@ -288,6 +279,13 @@ public class TemplateRestControllerImpl implements TemplateRestController {
         templateService.storeRequest(PostgresTableName.REQUEST_HISTORY, updateTemplateMetadataRequest);
 
         return ResponseEntity.ok().body(new ApiResponse(true, "Template has been successfully updated"));
+    }
+
+    private void validateEnvironmentName(String environment) {
+        if (!("dev".equalsIgnoreCase(environment) || "qa".equalsIgnoreCase(environment) || "prod".equalsIgnoreCase(environment))) {
+            String errorMessage = "Environment must be specified as one of the following: 'dev', 'qa', or 'prod'";
+            throw new BadRequestException(errorMessage);
+        }
     }
 
 }
