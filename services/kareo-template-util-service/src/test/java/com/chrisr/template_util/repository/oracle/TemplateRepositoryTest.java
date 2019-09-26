@@ -28,13 +28,13 @@ public class TemplateRepositoryTest {
     @Test(expected = ResourceNotFoundException.class)
     public void getUserId_RuntimeExceptionDuringSQL_ShouldThrowResourceNotFoundException() {
         when(namedParameterJdbcTemplate.queryForObject(anyString(), any(MapSqlParameterSource.class), any(Class.class))).thenThrow(new RuntimeException("Runtime Exception!"));
-        Long id = templateRepository.getUserId("chrisr");
+        Long id = templateRepository.getUserId("dev", "chrisr");
     }
 
     @Test
     public void getUserId_QueryReturnsLongId_ShouldSucceed() {
         when(namedParameterJdbcTemplate.queryForObject(anyString(), any(MapSqlParameterSource.class), any(Class.class))).thenReturn(50L);
-        Long id = templateRepository.getUserId("chrisr");
+        Long id = templateRepository.getUserId("dev", "chrisr");
         assertEquals(50, id.longValue());
     }
 }

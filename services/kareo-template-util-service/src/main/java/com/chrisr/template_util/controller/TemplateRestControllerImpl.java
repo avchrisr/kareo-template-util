@@ -124,6 +124,8 @@ public class TemplateRestControllerImpl implements TemplateRestController {
         System.out.println("----------   copyTemplatesRequest   ---------");
         System.out.println(copyTemplatesRequest);
 
+        validateEnvironmentName(copyTemplatesRequest.getFromEnvironment());
+        validateEnvironmentName(copyTemplatesRequest.getToEnvironment());
 
         String fromType = copyTemplatesRequest.getFromType().strip();
         String toType = copyTemplatesRequest.getToType().strip();
@@ -151,21 +153,21 @@ public class TemplateRestControllerImpl implements TemplateRestController {
         if ("SYSTEM".equalsIgnoreCase(fromType) && "USER".equalsIgnoreCase(toType)) {
 
             Long fromUserId = null;
-            Long toUserId = templateService.getUserId(copyTemplatesRequest.getToUsername());
+            Long toUserId = templateService.getUserId(copyTemplatesRequest.getToEnvironment(), copyTemplatesRequest.getToUsername());
             System.out.println("toUserId = " + toUserId);
 
-            Integer templateCount = templateService.getTemplateCount(fromType, fromUserId, copyTemplatesRequest.getTemplateIds());
+            Integer templateCount = templateService.getTemplateCount(copyTemplatesRequest.getFromEnvironment(), fromType, fromUserId, copyTemplatesRequest.getTemplateIds());
             System.out.println("templateCount = " + templateCount);
 
             if (templateCount != copyTemplatesRequest.getTemplateIds().length) {
                 throw new IllegalArgumentException("One or more System template IDs not found in database. Ensure that the templateIDs are correct");
             }
 
-            List<Template> templates = templateService.getTemplatesByIds(fromType, fromUserId, copyTemplatesRequest.getTemplateIds());
+            List<Template> templates = templateService.getTemplatesByIds(copyTemplatesRequest.getFromEnvironment(), fromType, fromUserId, copyTemplatesRequest.getTemplateIds());
             System.out.println(templates.toString());
 
             for (Template template : templates) {
-                templateService.copyTemplate(template, TemplateType.CUSTOM, toUserId);
+                templateService.copyTemplate(template, TemplateType.CUSTOM, toUserId, copyTemplatesRequest.getFromEnvironment(), copyTemplatesRequest.getToEnvironment());
             }
 
             templateService.storeRequest(PostgresTableName.REQUEST_HISTORY, copyTemplatesRequest);
@@ -184,7 +186,7 @@ public class TemplateRestControllerImpl implements TemplateRestController {
 
                 // verify that the system template id to replace exists
                 long[] templateIds = { copyTemplatesRequest.getSystemTemplateIdToReplace() };
-                Integer templateCount = templateService.getTemplateCount(toType, null, templateIds);
+                Integer templateCount = templateService.getTemplateCount(copyTemplatesRequest.getToEnvironment(), toType, null, templateIds);
 
                 if (templateCount != templateIds.length) {
                     String errorMessage = String.format("System Template ID to Replace (%s) not found in database.", copyTemplatesRequest.getSystemTemplateIdToReplace());
@@ -192,11 +194,11 @@ public class TemplateRestControllerImpl implements TemplateRestController {
                 }
             }
 
-            Long fromUserId = templateService.getUserId(copyTemplatesRequest.getFromUsername());
+            Long fromUserId = templateService.getUserId(copyTemplatesRequest.getFromEnvironment(), copyTemplatesRequest.getFromUsername());
             System.out.println("fromUserId = " + fromUserId);
             Long toUserId = null;
 
-            Integer templateCount = templateService.getTemplateCount("CUSTOM", fromUserId, copyTemplatesRequest.getTemplateIds());
+            Integer templateCount = templateService.getTemplateCount(copyTemplatesRequest.getFromEnvironment(),"CUSTOM", fromUserId, copyTemplatesRequest.getTemplateIds());
             System.out.println("templateCount = " + templateCount);
 
             if (templateCount != copyTemplatesRequest.getTemplateIds().length) {
@@ -204,14 +206,14 @@ public class TemplateRestControllerImpl implements TemplateRestController {
                 throw new IllegalArgumentException(errorMessage);
             }
 
-            List<Template> templates = templateService.getTemplatesByIds("CUSTOM", fromUserId, copyTemplatesRequest.getTemplateIds());
+            List<Template> templates = templateService.getTemplatesByIds(copyTemplatesRequest.getFromEnvironment(),"CUSTOM", fromUserId, copyTemplatesRequest.getTemplateIds());
             System.out.println(templates.toString());
 
             for (Template template : templates) {
                 if (copyTemplatesRequest.isCreateNewSystemTemplate()) {
-                    templateService.copyTemplate(template, TemplateType.SYSTEM, toUserId);
+                    templateService.copyTemplate(template, TemplateType.SYSTEM, toUserId, copyTemplatesRequest.getFromEnvironment(), copyTemplatesRequest.getToEnvironment());
                 } else {
-                    templateService.replaceTemplate(copyTemplatesRequest.getSystemTemplateIdToReplace(), template, TemplateType.SYSTEM, toUserId);
+                    templateService.replaceTemplate(copyTemplatesRequest.getSystemTemplateIdToReplace(), template, TemplateType.SYSTEM, toUserId, copyTemplatesRequest.getFromEnvironment(), copyTemplatesRequest.getToEnvironment());
                 }
             }
 
@@ -222,12 +224,12 @@ public class TemplateRestControllerImpl implements TemplateRestController {
 
         } else if ("USER".equalsIgnoreCase(fromType) && "USER".equalsIgnoreCase(toType)) {
 
-            Long fromUserId = templateService.getUserId(copyTemplatesRequest.getFromUsername());
+            Long fromUserId = templateService.getUserId(copyTemplatesRequest.getFromEnvironment(), copyTemplatesRequest.getFromUsername());
             System.out.println("fromUserId = " + fromUserId);
-            Long toUserId = templateService.getUserId(copyTemplatesRequest.getToUsername());
+            Long toUserId = templateService.getUserId(copyTemplatesRequest.getToEnvironment(), copyTemplatesRequest.getToUsername());
             System.out.println("toUserId = " + toUserId);
 
-            Integer templateCount = templateService.getTemplateCount("CUSTOM", fromUserId, copyTemplatesRequest.getTemplateIds());
+            Integer templateCount = templateService.getTemplateCount(copyTemplatesRequest.getFromEnvironment(),"CUSTOM", fromUserId, copyTemplatesRequest.getTemplateIds());
             System.out.println("templateCount = " + templateCount);
 
             if (templateCount != copyTemplatesRequest.getTemplateIds().length) {
@@ -235,11 +237,11 @@ public class TemplateRestControllerImpl implements TemplateRestController {
                 throw new IllegalArgumentException(errorMessage);
             }
 
-            List<Template> templates = templateService.getTemplatesByIds("CUSTOM", fromUserId, copyTemplatesRequest.getTemplateIds());
+            List<Template> templates = templateService.getTemplatesByIds(copyTemplatesRequest.getFromEnvironment(),"CUSTOM", fromUserId, copyTemplatesRequest.getTemplateIds());
             System.out.println(templates.toString());
 
             for (Template template : templates) {
-                templateService.copyTemplate(template, TemplateType.CUSTOM, toUserId);
+                templateService.copyTemplate(template, TemplateType.CUSTOM, toUserId, copyTemplatesRequest.getFromEnvironment(), copyTemplatesRequest.getToEnvironment());
             }
 
             templateService.storeRequest(PostgresTableName.REQUEST_HISTORY, copyTemplatesRequest);

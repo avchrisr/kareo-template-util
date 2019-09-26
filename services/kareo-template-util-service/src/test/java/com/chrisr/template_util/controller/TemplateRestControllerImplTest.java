@@ -80,6 +80,43 @@ public class TemplateRestControllerImplTest {
     }
 
     @Test(expected = BadRequestException.class)
+    public void copyTemplates_MissingFromEnvironmentName_ShouldThrowBadRequestException() {
+
+        CopyTemplatesRequest copyTemplatesRequest = new CopyTemplatesRequest();
+        copyTemplatesRequest.setFromType("SYSTEM");
+        copyTemplatesRequest.setToEnvironment("dev");
+        copyTemplatesRequest.setToType("USER");
+        copyTemplatesRequest.setToUsername("some_other_user");
+
+        templateRestController.copyTemplates(copyTemplatesRequest);
+    }
+
+    @Test(expected = BadRequestException.class)
+    public void copyTemplates_MissingToEnvironmentName_ShouldThrowBadRequestException() {
+
+        CopyTemplatesRequest copyTemplatesRequest = new CopyTemplatesRequest();
+        copyTemplatesRequest.setFromEnvironment("dev");
+        copyTemplatesRequest.setFromType("SYSTEM");
+        copyTemplatesRequest.setToType("USER");
+        copyTemplatesRequest.setToUsername("some_other_user");
+
+        templateRestController.copyTemplates(copyTemplatesRequest);
+    }
+
+    @Test(expected = BadRequestException.class)
+    public void copyTemplates_InvalidEnvName_ShouldThrowBadRequestException() {
+
+        CopyTemplatesRequest copyTemplatesRequest = new CopyTemplatesRequest();
+        copyTemplatesRequest.setFromEnvironment("randomEnv");
+        copyTemplatesRequest.setFromType("SYSTEM");
+        copyTemplatesRequest.setToEnvironment("qa");
+        copyTemplatesRequest.setToType("USER");
+        copyTemplatesRequest.setToUsername("some_other_user");
+
+        templateRestController.copyTemplates(copyTemplatesRequest);
+    }
+
+    @Test(expected = BadRequestException.class)
     public void copyTemplates_SystemTypeWithFromUsername_ShouldThrowBadRequestException() {
 
         CopyTemplatesRequest copyTemplatesRequest = new CopyTemplatesRequest();
@@ -131,8 +168,10 @@ public class TemplateRestControllerImplTest {
     public void copyTemplates_MissingTemplateIds_ShouldThrowIllegalArgumentException() {
 
         CopyTemplatesRequest copyTemplatesRequest = new CopyTemplatesRequest();
+        copyTemplatesRequest.setFromEnvironment("dev");
         copyTemplatesRequest.setFromType("USER");
         copyTemplatesRequest.setFromUsername("user1");
+        copyTemplatesRequest.setToEnvironment("dev");
         copyTemplatesRequest.setToType("SYSTEM");
 
         templateRestController.copyTemplates(copyTemplatesRequest);
@@ -142,14 +181,16 @@ public class TemplateRestControllerImplTest {
     public void copyTemplates_TemplateCountDoesNotMatchTheProvidedIds_ShouldThrowIllegalArgumentException() {
 
         CopyTemplatesRequest copyTemplatesRequest = new CopyTemplatesRequest();
+        copyTemplatesRequest.setFromEnvironment("dev");
         copyTemplatesRequest.setFromType("USER");
         copyTemplatesRequest.setFromUsername("user1");
+        copyTemplatesRequest.setToEnvironment("dev");
         copyTemplatesRequest.setToType("SYSTEM");
         copyTemplatesRequest.setCreateNewSystemTemplate(true);
         long[] templateIds = {1L, 2L, 3L};
         copyTemplatesRequest.setTemplateIds(templateIds);
 
-        when(templateService.getTemplateCount(anyString(), anyLong(), any(long[].class))).thenReturn(2);
+        when(templateService.getTemplateCount(anyString(), anyString(), anyLong(), any(long[].class))).thenReturn(2);
         templateRestController.copyTemplates(copyTemplatesRequest);
     }
 
@@ -171,14 +212,16 @@ public class TemplateRestControllerImplTest {
     public void copyTemplates_ValidRequest_ShouldSucceed() {
 
         CopyTemplatesRequest copyTemplatesRequest = new CopyTemplatesRequest();
+        copyTemplatesRequest.setFromEnvironment("dev");
         copyTemplatesRequest.setFromType("USER");
         copyTemplatesRequest.setFromUsername("user1");
+        copyTemplatesRequest.setToEnvironment("qa");
         copyTemplatesRequest.setToType("SYSTEM");
         copyTemplatesRequest.setCreateNewSystemTemplate(true);
         long[] templateIds = {1L, 2L, 3L};
         copyTemplatesRequest.setTemplateIds(templateIds);
 
-        when(templateService.getTemplateCount(anyString(), anyLong(), any(long[].class))).thenReturn(3);
+        when(templateService.getTemplateCount(anyString(), anyString(), anyLong(), any(long[].class))).thenReturn(3);
         templateRestController.copyTemplates(copyTemplatesRequest);
     }
 

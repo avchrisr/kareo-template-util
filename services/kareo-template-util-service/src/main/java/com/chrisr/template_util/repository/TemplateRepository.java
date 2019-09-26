@@ -40,14 +40,16 @@ public class TemplateRepository {
         this.postgresNamedParameterJdbcTemplate = postgresNamedParameterJdbcTemplate;
     }
 
-    public Long getUserId(String username) {
+    public Long getUserId(String environment, String username) {
+        NamedParameterJdbcTemplate oracleJdbcTemplate = getOracleJdbcTemplateForEnvironment(environment);
+
         Long userId;
 
         MapSqlParameterSource params = new MapSqlParameterSource();
         params.addValue("username", username.strip().toUpperCase());
 
         try {
-            userId = oracleNamedParameterJdbcTemplate.queryForObject(GET_USER_ID_QUERY, params, Long.class);
+            userId = oracleJdbcTemplate.queryForObject(GET_USER_ID_QUERY, params, Long.class);
         } catch (Exception e) {
             String errorMessage = String.format("No UserId found with username = %s", username);
             logger.info(errorMessage);
@@ -84,7 +86,7 @@ public class TemplateRepository {
             }
 
             if (type != null && !type.isBlank()) {
-                Integer templateTypeId = getTemplateTypeId(TemplateType.valueOf(type.strip().toUpperCase()));
+                Integer templateTypeId = getTemplateTypeId(environment, TemplateType.valueOf(type.strip().toUpperCase()));
                 params.addValue("templateTypeId", templateTypeId);
                 stringBuilder.append(" AND t.TEMPLATE_TYPE_ID = :templateTypeId");
             }
@@ -104,7 +106,7 @@ public class TemplateRepository {
                 stringBuilder.append(" AND u.USERNAME = :username");
 
                 // to validate that the username exists
-                Long userId = getUserId(username);
+                Long userId = getUserId(environment, username);
 
 //            params.addValue("userId", userId);
 //            stringBuilder.append(" AND USER_ID = :userId");
@@ -117,12 +119,14 @@ public class TemplateRepository {
         return oracleJdbcTemplate.query(stringBuilder.toString(), params, TEMPLATE_SEARCH_ROW_MAPPER);
     }
 
-    public Integer getTemplateCount(String templateType, Long userId, long[] templateIdsFromRequest) {
+    public Integer getTemplateCount(String environment, String templateType, Long userId, long[] templateIdsFromRequest) {
 
 //        MapSqlParameterSource params = new MapSqlParameterSource();
 //        params.addValue("startDate", startPeriod.toDate(), Types.DATE);
 //        params.addValue("endDate", endPeriod.toDate(), Types.DATE);
 //        params.addValue("providerIds", providerIds);
+
+        NamedParameterJdbcTemplate oracleJdbcTemplate = getOracleJdbcTemplateForEnvironment(environment);
 
         MapSqlParameterSource params = new MapSqlParameterSource();
 
@@ -144,15 +148,17 @@ public class TemplateRepository {
             params.addValue("userId", userId);
         }
 
-        return oracleNamedParameterJdbcTemplate.queryForObject(query, params, Integer.class);
+        return oracleJdbcTemplate.queryForObject(query, params, Integer.class);
     }
 
-    public List<Template> getTemplatesByIds(String templateType, Long userId, long[] templateIdsFromRequest) {
+    public List<Template> getTemplatesByIds(String environment, String templateType, Long userId, long[] templateIdsFromRequest) {
 
 //        MapSqlParameterSource namedParameters = new MapSqlParameterSource();
 //        namedParameters.addValue("startDate", startPeriod.toDate(), Types.DATE);
 //        namedParameters.addValue("endDate", endPeriod.toDate(), Types.DATE);
 //        namedParameters.addValue("providerIds", providerIds);
+
+        NamedParameterJdbcTemplate oracleJdbcTemplate = getOracleJdbcTemplateForEnvironment(environment);
 
         String query;
         MapSqlParameterSource params = new MapSqlParameterSource();
@@ -179,28 +185,31 @@ public class TemplateRepository {
             params.addValue("userId", userId);
         }
 
-        return oracleNamedParameterJdbcTemplate.query(query, params, TEMPLATE_ROW_MAPPER);
+        return oracleJdbcTemplate.query(query, params, TEMPLATE_ROW_MAPPER);
     }
 
-    public List<TemplateSection> getTemplateSections(long templateId) {
+    public List<TemplateSection> getTemplateSections(String environment, long templateId) {
+        NamedParameterJdbcTemplate oracleJdbcTemplate = getOracleJdbcTemplateForEnvironment(environment);
         MapSqlParameterSource params = new MapSqlParameterSource();
         params.addValue("templateId", templateId);
-        return oracleNamedParameterJdbcTemplate.query(GET_TEMPLATE_SECTIONS_QUERY, params, TEMPLATE_SECTION_ROW_MAPPER);
+        return oracleJdbcTemplate.query(GET_TEMPLATE_SECTIONS_QUERY, params, TEMPLATE_SECTION_ROW_MAPPER);
     }
 
-    public List<TemplateCarePlan> getTemplateCarePlans(long templateId) {
+    public List<TemplateCarePlan> getTemplateCarePlans(String environment, long templateId) {
+        NamedParameterJdbcTemplate oracleJdbcTemplate = getOracleJdbcTemplateForEnvironment(environment);
         MapSqlParameterSource params = new MapSqlParameterSource();
         params.addValue("templateId", templateId);
-        return oracleNamedParameterJdbcTemplate.query(GET_TEMPLATE_CAREPLANS_QUERY, params, TEMPLATE_CAREPLAN_ROW_MAPPER);
+        return oracleJdbcTemplate.query(GET_TEMPLATE_CAREPLANS_QUERY, params, TEMPLATE_CAREPLAN_ROW_MAPPER);
     }
 
-    public List<TemplateSpecialty> getTemplateSpecialties(long templateId) {
+    public List<TemplateSpecialty> getTemplateSpecialties(String environment, long templateId) {
+        NamedParameterJdbcTemplate oracleJdbcTemplate = getOracleJdbcTemplateForEnvironment(environment);
         MapSqlParameterSource params = new MapSqlParameterSource();
         params.addValue("templateId", templateId);
-        return oracleNamedParameterJdbcTemplate.query(GET_TEMPLATE_SPECIALTIES_QUERY, params, TEMPLATE_SPECIALTY_ROW_MAPPER);
+        return oracleJdbcTemplate.query(GET_TEMPLATE_SPECIALTIES_QUERY, params, TEMPLATE_SPECIALTY_ROW_MAPPER);
     }
 
-    public Integer getTemplateTypeId(TemplateType templateType) {
+    public Integer getTemplateTypeId(String environment, TemplateType templateType) {
         switch (templateType) {
             case SYSTEM:
             case CUSTOM:
@@ -210,14 +219,16 @@ public class TemplateRepository {
                 throw new IllegalArgumentException(errorMessage);
         }
 
+        NamedParameterJdbcTemplate oracleJdbcTemplate = getOracleJdbcTemplateForEnvironment(environment);
+
         String query = "SELECT TEMPLATE_TYPE_ID FROM HEALTHCARE.TEMPLATE_TYPE WHERE UPPER(NAME) = :templateType";
         MapSqlParameterSource params = new MapSqlParameterSource();
         params.addValue("templateType", templateType.name());
 
-        return oracleNamedParameterJdbcTemplate.queryForObject(query, params, Integer.class);
+        return oracleJdbcTemplate.queryForObject(query, params, Integer.class);
     }
 
-    public Long getNextSequence(OracleTableName oracleTableName) {
+    public Long getNextSequence(String environment, OracleTableName oracleTableName) {
         String query;
 
         switch (oracleTableName) {
@@ -238,11 +249,13 @@ public class TemplateRepository {
                 throw new IllegalArgumentException(errorMessage);
         }
 
+        NamedParameterJdbcTemplate oracleJdbcTemplate = getOracleJdbcTemplateForEnvironment(environment);
         MapSqlParameterSource params = new MapSqlParameterSource();
-        return oracleNamedParameterJdbcTemplate.queryForObject(query, params, Long.class);
+        return oracleJdbcTemplate.queryForObject(query, params, Long.class);
     }
 
-    public void insertTemplate(Long templateId, Template template, Long userId, Integer templateTypeId) {
+    public void insertTemplate(String environment, Long templateId, Template template, Long userId, Integer templateTypeId) {
+        NamedParameterJdbcTemplate oracleJdbcTemplate = getOracleJdbcTemplateForEnvironment(environment);
 
         MapSqlParameterSource params = new MapSqlParameterSource();
         params.addValue("templateId", templateId);
@@ -252,12 +265,13 @@ public class TemplateRepository {
         params.addValue("userId", userId);
         params.addValue("templateTypeId", templateTypeId);
 
-        oracleNamedParameterJdbcTemplate.update(INSERT_TEMPLATE_QUERY, params);
+        oracleJdbcTemplate.update(INSERT_TEMPLATE_QUERY, params);
     }
 
-    public void insertTemplateSection(long templateId, TemplateSection templateSection) {
+    public void insertTemplateSection(String environment, long templateId, TemplateSection templateSection) {
+        NamedParameterJdbcTemplate oracleJdbcTemplate = getOracleJdbcTemplateForEnvironment(environment);
 
-        long newTemplateSectionId = getNextSequence(OracleTableName.TEMPLATE_SECTIONS);
+        long newTemplateSectionId = getNextSequence(environment, OracleTableName.TEMPLATE_SECTIONS);
         MapSqlParameterSource params = new MapSqlParameterSource();
         params.addValue("id", newTemplateSectionId);
         params.addValue("templateId", templateId);
@@ -265,12 +279,13 @@ public class TemplateRepository {
         params.addValue("inherit", templateSection.getInherit());
         params.addValue("key", templateSection.getKey());
 
-        oracleNamedParameterJdbcTemplate.update(INSERT_TEMPLATE_SECTION_QUERY, params);
+        oracleJdbcTemplate.update(INSERT_TEMPLATE_SECTION_QUERY, params);
     }
 
-    public void insertTemplateCarePlan(long templateId, TemplateCarePlan templateCarePlan) {
+    public void insertTemplateCarePlan(String environment, long templateId, TemplateCarePlan templateCarePlan) {
+        NamedParameterJdbcTemplate oracleJdbcTemplate = getOracleJdbcTemplateForEnvironment(environment);
 
-        long newTemplateCarePlanId = getNextSequence(OracleTableName.TEMPLATE_CAREPLANS);
+        long newTemplateCarePlanId = getNextSequence(environment, OracleTableName.TEMPLATE_CAREPLANS);
         MapSqlParameterSource params = new MapSqlParameterSource();
         params.addValue("id", newTemplateCarePlanId);
         params.addValue("templateId", templateId);
@@ -278,18 +293,19 @@ public class TemplateRepository {
         params.addValue("inherit", templateCarePlan.getInherit());
         params.addValue("key", templateCarePlan.getKey());
 
-        oracleNamedParameterJdbcTemplate.update(INSERT_TEMPLATE_CAREPLAN_QUERY, params);
+        oracleJdbcTemplate.update(INSERT_TEMPLATE_CAREPLAN_QUERY, params);
     }
 
-    public void insertTemplateSpecialty(long templateId, TemplateSpecialty templateSpecialty) {
+    public void insertTemplateSpecialty(String environment, long templateId, TemplateSpecialty templateSpecialty) {
+        NamedParameterJdbcTemplate oracleJdbcTemplate = getOracleJdbcTemplateForEnvironment(environment);
 
-        long newTemplateSpecialtyId = getNextSequence(OracleTableName.TEMPLATE_SPECIALTIES);
+        long newTemplateSpecialtyId = getNextSequence(environment, OracleTableName.TEMPLATE_SPECIALTIES);
         MapSqlParameterSource params = new MapSqlParameterSource();
         params.addValue("id", newTemplateSpecialtyId);
         params.addValue("templateId", templateId);
         params.addValue("description", templateSpecialty.getDescription());
 
-        oracleNamedParameterJdbcTemplate.update(INSERT_TEMPLATE_SPECIALTY_QUERY, params);
+        oracleJdbcTemplate.update(INSERT_TEMPLATE_SPECIALTY_QUERY, params);
     }
 
     public void updateTemplateMetadata(Template existingTemplate, UpdateTemplateMetadataRequest updateTemplateMetadataRequest) {

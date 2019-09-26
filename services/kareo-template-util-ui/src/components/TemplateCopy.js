@@ -146,6 +146,12 @@ function TemplateCopy() {
         // INPUT VALIDATION
         const errorMessages = [];
 
+        if (_.isEmpty(fromEnv)) {
+            errorMessages.push(`"FromEnvironment" is required.`);
+        }
+        if (_.isEmpty(toEnv)) {
+            errorMessages.push(`"ToEnvironment" is required.`);
+        }
         if (fromType === 'user' && _.isEmpty(fromUsername.trim())) {
             errorMessages.push(`"FromUsername" is required.`);
         }

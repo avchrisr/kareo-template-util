@@ -33,8 +33,8 @@ public class TemplateService {
     }
 
 
-    public Long getUserId(String username) {
-        return templateRepository.getUserId(username);
+    public Long getUserId(String environment, String username) {
+        return templateRepository.getUserId(environment, username);
     }
 
     @Transactional(readOnly = true)
@@ -43,50 +43,50 @@ public class TemplateService {
     }
 
     @Transactional(readOnly = true)
-    public Integer getTemplateCount(String templateType, Long userId, long[] templateIds) {
-        return templateRepository.getTemplateCount(templateType, userId, templateIds);
+    public Integer getTemplateCount(String environment, String templateType, Long userId, long[] templateIds) {
+        return templateRepository.getTemplateCount(environment, templateType, userId, templateIds);
     }
 
     @Transactional(readOnly = true)
-    public List<Template> getTemplatesByIds(String templateType, Long userId, long[] templateIdsFromRequest) {
-        return templateRepository.getTemplatesByIds(templateType, userId, templateIdsFromRequest);
+    public List<Template> getTemplatesByIds(String environment, String templateType, Long userId, long[] templateIdsFromRequest) {
+        return templateRepository.getTemplatesByIds(environment, templateType, userId, templateIdsFromRequest);
     }
 
     @Transactional
-    public long copyTemplate(Template template, TemplateType toTemplateType, Long toUserId) {
+    public long copyTemplate(Template template, TemplateType toTemplateType, Long toUserId, String fromEnvironment, String toEnvironment) {
         // gather
-        List<TemplateSection> templateSections = templateRepository.getTemplateSections(template.getId());
+        List<TemplateSection> templateSections = templateRepository.getTemplateSections(fromEnvironment, template.getId());
         System.out.println(templateSections.toString());
 
-        List<TemplateCarePlan> templateCarePlans = templateRepository.getTemplateCarePlans(template.getId());
+        List<TemplateCarePlan> templateCarePlans = templateRepository.getTemplateCarePlans(fromEnvironment, template.getId());
         System.out.println(templateCarePlans.toString());
 
-        List<TemplateSpecialty> templateSpecialties = templateRepository.getTemplateSpecialties(template.getId());
+        List<TemplateSpecialty> templateSpecialties = templateRepository.getTemplateSpecialties(fromEnvironment, template.getId());
         System.out.println(templateSpecialties.toString());
 
         // insert
-        Integer toTemplateTypeId = templateRepository.getTemplateTypeId(toTemplateType);
-        Long newTemplateId = templateRepository.getNextSequence(OracleTableName.TEMPLATES);
-        templateRepository.insertTemplate(newTemplateId, template, toUserId, toTemplateTypeId);
+        Integer toTemplateTypeId = templateRepository.getTemplateTypeId(toEnvironment, toTemplateType);
+        Long newTemplateId = templateRepository.getNextSequence(toEnvironment, OracleTableName.TEMPLATES);
+        templateRepository.insertTemplate(toEnvironment, newTemplateId, template, toUserId, toTemplateTypeId);
 
         for (TemplateSection templateSection : templateSections) {
-            templateRepository.insertTemplateSection(newTemplateId, templateSection);
+            templateRepository.insertTemplateSection(toEnvironment, newTemplateId, templateSection);
         }
 
         for (TemplateCarePlan templateCarePlan : templateCarePlans) {
-            templateRepository.insertTemplateCarePlan(newTemplateId, templateCarePlan);
+            templateRepository.insertTemplateCarePlan(toEnvironment, newTemplateId, templateCarePlan);
         }
 
         for (TemplateSpecialty templateSpecialty : templateSpecialties) {
-            templateRepository.insertTemplateSpecialty(newTemplateId, templateSpecialty);
+            templateRepository.insertTemplateSpecialty(toEnvironment, newTemplateId, templateSpecialty);
         }
 
         return newTemplateId;
     }
 
     @Transactional
-    public void replaceTemplate(long templateIdToReplace, Template template, TemplateType toTemplateType, Long toUserId) {
-        long newTemplateId = copyTemplate(template, toTemplateType, toUserId);
+    public void replaceTemplate(long templateIdToReplace, Template template, TemplateType toTemplateType, Long toUserId, String fromEnvironment, String toEnvironment) {
+        long newTemplateId = copyTemplate(template, toTemplateType, toUserId, fromEnvironment, toEnvironment);
         templateRepository.deleteTemplate(templateIdToReplace);
         templateRepository.replaceUserDeactivatedTemplateId(templateIdToReplace, newTemplateId);
     }
@@ -96,7 +96,7 @@ public class TemplateService {
 
         // get the existing template
         long[] templateIds = {updateTemplateMetadataRequest.getCurrentTemplateId()};
-        List<Template> templates = templateRepository.getTemplatesByIds(null, null, templateIds);
+        List<Template> templates = templateRepository.getTemplatesByIds(updateTemplateMetadataRequest.getEnvironment(), null, null, templateIds);
         if (templates.isEmpty()) {
             String errorMessage = String.format("Template Not Found with ID = %s", updateTemplateMetadataRequest.getCurrentTemplateId());
             throw new ResourceNotFoundException(errorMessage);
