@@ -20,6 +20,7 @@ import axios from 'axios';
 import { RootContext } from "../RootContext";
 
 import { navigate } from 'hookrouter';
+import { AuthContext, ReducerActionTypes } from "../App";
 
 const REACT_APP_STATIC_SITE_DEMO_MODE = process.env.REACT_APP_STATIC_SITE_DEMO_MODE || 'false';
 const REACT_APP_NGINX_HOSTNAME = process.env.REACT_APP_NGINX_HOSTNAME || 'localhost';
@@ -69,56 +70,57 @@ function Copyright() {
     );
 }
 
-export default function SignIn() {
+const SignIn = (props) => {
     const classes = useStyles();
 
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [errorMessages, setErrorMessages] = useState([]);
-    const [isSubmitting, setIsSubmitting] = useState(false);
+    const { dispatch } = useContext(AuthContext);
 
-    const { authenticated, setAuthenticated, authBody, setAuthBody } = useContext(RootContext);
+    const initialState = {
+        email: '',
+        password: '',
+        isSubmitting: false,
+        errorMessages: []
+    };
 
-    console.log(`authenticated signIn = ${authenticated}`);
-    console.log(`authBody signIn = ${authBody}`);
+    const [data, setData] = useState(initialState);
 
     const handleInputValueChange = (event) => {
-        switch (event.target.name) {
-            case 'email':
-                setEmail(event.target.value);
-                break;
-            case 'password':
-                setPassword(event.target.value);
-                break;
-            default:
-                console.log(`Error - Unrecognized event.target.name = ${event.target.name}`);
-                break;
-        }
+        setData({
+            ...data,
+            [event.target.name]: event.target.value
+        });
     };
 
     const handleSignIn = async (event) => {
         event.preventDefault();
 
-        console.log(`sign in button clicked. email = ${email} | password = ${password}`);
+        console.log(`sign in button clicked. email = ${data.email} | password = ${data.password}`);
 
         const errorMessages = [];
 
-        if (_.isEmpty(email) || _.isEmpty(password)) {
+        if (_.isEmpty(data.email) || _.isEmpty(data.password)) {
             const errorMessage = 'Email and password are required in order to sign in';
             console.log(errorMessage);
 
             errorMessages.push(errorMessage);
-            setErrorMessages(errorMessages);
+            setData({
+                ...data,
+                errorMessages
+            });
             return;
         }
 
-        setIsSubmitting(true);
+        setData({
+            ...data,
+            isSubmitting: true,
+            errorMessages: []
+        });
 
         const url = `http://${REACT_APP_NGINX_HOSTNAME}:${REACT_APP_NGINX_PORT}/api/${REACT_APP_API_VERSION}/auth/login`;
 
         const requestBody = {
-            username: email,
-            password
+            username: data.email,
+            password: data.password
         };
 
         const options = {
@@ -149,14 +151,23 @@ export default function SignIn() {
                 errorMessage = 'Invalid user credential';
             }
 
-            setIsSubmitting(false);
-
             // TODO: implement static site demo mode
             if (REACT_APP_STATIC_SITE_DEMO_MODE === 'true') {
-                setAuthenticated('true');
-                navigate('/');
+
+                console.log('-------  sign in error 1  ---------');
+                // props.setAuthenticated('true');
+                // navigate('/');
             } else {
-                setErrorMessages([errorMessage]);
+
+                console.log('--------   Sign In Error Message   ----------');
+                console.log(errorMessage);
+
+
+                setData({
+                    ...data,
+                    isSubmitting: false,
+                    errorMessages: [errorMessage]
+                });
             }
         });
 
@@ -164,25 +175,27 @@ export default function SignIn() {
             console.log(`-------------  res.data  ---------------`);
             console.log(JSON.stringify(res.data, null, 4));
 
-            // TODO: have BE return firstname and lastname? or include those in JWT token?
-            res.data.username = email;
-
             /*
             {
                 "jwt": "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJnYmVhckBlbWFpbC5jb20iLCJpYXQiOjE1Njg0OTQ0MDcsImV4cCI6MTU2OTA5OTIwN30.GdTamSSsmrLNt8Qggv-bk1iVk_Jglqwua3WnWMu2kZ7iCGuqrZP0qRCb2YDS1-50jHvxaLg3MOVoCyWRd_VGVQ"
             }
             */
 
-            // TODO: store JWT in local storage, and implement Refresh Token workflow
+            const base64Url = res.data.jwt.split('.')[0]; // 0: header  1: payload
+            const base64 = base64Url.replace('-', '+').replace('_', '/');
+            const jwtHeader = JSON.parse(Buffer.from(base64, 'base64').toString('UTF-8'));
 
+            console.log(`-------------  jwtHeader  ---------------`);
+            console.log(jwtHeader);
 
-            console.log(`-------------  res.data  ---------------`);
-            console.log(JSON.stringify(res.data, null, 4));
+            res.data.userId = jwtHeader.userId;
+            res.data.userFirstname = jwtHeader.userFirstname;
 
-            setAuthenticated('true');
-            setAuthBody(JSON.stringify(res.data));
+            dispatch({
+                type: ReducerActionTypes.LOGIN,
+                payload: res.data
+            });
 
-            setIsSubmitting(false);
             navigate('/');
         }
     };
@@ -209,8 +222,9 @@ export default function SignIn() {
                         name="email"
                         autoComplete="email"
                         autoFocus
-                        value={email}
+                        value={data.email}
                         onChange={handleInputValueChange}
+                        // onChange={(event) => setEmail(event.target.value)}
                     />
                     <TextField
                         variant="outlined"
@@ -222,8 +236,9 @@ export default function SignIn() {
                         type="password"
                         id="password"
                         autoComplete="current-password"
-                        value={password}
+                        value={data.password}
                         onChange={handleInputValueChange}
+                        // onChange={(event) => setPassword(event.target.value)}
                     />
                     {/* <FormControlLabel
                         control={<Checkbox value="remember" color="primary" />}
@@ -235,10 +250,10 @@ export default function SignIn() {
                         variant="contained"
                         color="primary"
                         className={classes.submit}
+                        disabled={data.isSubmitting}
                         onClick={handleSignIn}
-                        disabled={isSubmitting}
                     >
-                        Sign In
+                        {data.isSubmitting ? 'Loading...' : 'Sign In'}
                     </Button>
                     <Grid container>
                         <Grid item xs>
@@ -247,7 +262,7 @@ export default function SignIn() {
                             </Link>
                         </Grid>
                         <Grid item>
-                            <Link href="/signup" variant="body2">
+                            <Link href="/sign-up" variant="body2">
                                 {"Don't have an account? Sign Up"}
                             </Link>
                         </Grid>
@@ -259,7 +274,7 @@ export default function SignIn() {
             </Box>
 
             <div className={classes.errorDisplay}>
-                {errorMessages.map((errorMessage, index) => (<SnackbarContent
+                {data.errorMessages.map((errorMessage, index) => (<SnackbarContent
                     className={classes.errorDisplay}
                     message={errorMessage}
                     key={index}
@@ -269,3 +284,5 @@ export default function SignIn() {
         </Container>
     );
 }
+
+export default SignIn;

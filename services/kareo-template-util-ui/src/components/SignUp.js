@@ -72,62 +72,58 @@ const useStyles = makeStyles(theme => ({
 export default function SignUp() {
     const classes = useStyles();
 
-    const [firstName, setFirstName] = useState('');
-    const [lastName, setLastName] = useState('');
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [errorMessages, setErrorMessages] = useState([]);
-    const [successMessage, setSuccessMessage] = useState('');
-    const [isSubmitting, setIsSubmitting] = useState(false);
+    const initialState = {
+        firstname: '',
+        lastname: '',
+        email: '',
+        password: '',
+        isSubmitting: false,
+        errorMessages: [],
+        responseMessage: ''
+    };
 
+    const [data, setData] = useState(initialState);
     const handleInputValueChange = (event) => {
-        switch (event.target.name) {
-            case 'firstName':
-                setFirstName(event.target.value);
-                break;
-            case 'lastName':
-                setLastName(event.target.value);
-                break;
-            case 'email':
-                setEmail(event.target.value);
-                break;
-            case 'password':
-                setPassword(event.target.value);
-                break;
-            default:
-                console.log(`Error - Unrecognized event.target.name = ${event.target.name}`);
-                break;
-        }
+        setData({
+            ...data,
+            [event.target.name]: event.target.value
+        });
     };
 
     const handleSignUp = async (event) => {
         event.preventDefault();
 
-        console.log(`sign up button clicked. firstName = ${firstName} | lastName = ${lastName} | email = ${email} | password = ${password}`);
+        console.log(`sign up button clicked. firstname = ${data.firstname} | lastname = ${data.lastname} | email = ${data.email} | password = ${data.password}`);
 
         const errorMessages = [];
-        setErrorMessages(errorMessages);
 
-        if (_.isEmpty(firstName) || _.isEmpty(lastName) ||
-            _.isEmpty(email) || _.isEmpty(password)) {
+        if (_.isEmpty(data.firstname) || _.isEmpty(data.lastname) ||
+            _.isEmpty(data.email) || _.isEmpty(data.password)) {
             const errorMessage = 'All fields are required in order to sign up';
             console.log(errorMessage);
 
             errorMessages.push(errorMessage);
-            setErrorMessages(errorMessages);
+
+            setData({
+                ...data,
+                errorMessages
+            });
             return;
         }
 
-        setIsSubmitting(true);
+        setData({
+            ...data,
+            isSubmitting: true
+        });
 
         const url = `http://${REACT_APP_NGINX_HOSTNAME}:${REACT_APP_NGINX_PORT}/api/${REACT_APP_API_VERSION}/auth/register`;
 
         const requestBody = {
-            firstname: firstName,
-            lastname: lastName,
-            email,
-            username: email,
-            password
+            firstname: data.firstname,
+            lastname: data.lastname,
+            email: data.email,
+            username: data.email,
+            password: data.password
         };
 
         const options = {
@@ -163,11 +159,12 @@ export default function SignUp() {
 
 
             } else {
-                setErrorMessages([errorMessage]);
+                setData({
+                    ...data,
+                    isSubmitting: false,
+                    errorMessages: [errorMessage]
+                });
             }
-
-            setIsSubmitting(false);
-
         });
 
         if (res || REACT_APP_STATIC_SITE_DEMO_MODE === 'true') {
@@ -177,13 +174,15 @@ export default function SignUp() {
                 console.log(JSON.stringify(res.data, null, 4));
             }
 
-            // setSuccessMessage(res.data);
-            setSuccessMessage(`Successfully registered user. Redirecting to the login page...`);
+            setData({
+                ...data,
+                isSubmitting: true,
+                responseMessage: `Successfully registered user. Redirecting to the login page...`
+            });
 
             setTimeout(() => {
-                setIsSubmitting(false);
                 window.location.replace('/login');
-            }, 2500);
+            }, 1500);
         }
     };
 
@@ -203,14 +202,14 @@ export default function SignUp() {
                         <Grid item xs={12} sm={6}>
                             <TextField
                                 autoComplete="fname"
-                                name="firstName"
+                                name="firstname"
                                 variant="outlined"
                                 required
                                 fullWidth
-                                id="firstName"
+                                id="firstname"
                                 label="First Name"
                                 autoFocus
-                                value={firstName}
+                                value={data.firstname}
                                 onChange={handleInputValueChange}
                             />
                         </Grid>
@@ -219,11 +218,11 @@ export default function SignUp() {
                                 variant="outlined"
                                 required
                                 fullWidth
-                                id="lastName"
+                                id="lastname"
                                 label="Last Name"
-                                name="lastName"
+                                name="lastname"
                                 autoComplete="lname"
-                                value={lastName}
+                                value={data.lastname}
                                 onChange={handleInputValueChange}
                             />
                         </Grid>
@@ -236,7 +235,7 @@ export default function SignUp() {
                                 label="Email Address"
                                 name="email"
                                 autoComplete="email"
-                                value={email}
+                                value={data.email}
                                 onChange={handleInputValueChange}
                             />
                         </Grid>
@@ -250,7 +249,7 @@ export default function SignUp() {
                                 type="password"
                                 id="password"
                                 autoComplete="current-password"
-                                value={password}
+                                value={data.password}
                                 onChange={handleInputValueChange}
                             />
                         </Grid>
@@ -272,8 +271,8 @@ export default function SignUp() {
                         variant="contained"
                         color="primary"
                         className={classes.submit}
+                        disabled={data.isSubmitting}
                         onClick={handleSignUp}
-                        disabled={isSubmitting}
                     >
                         Sign Up
                     </Button>
@@ -292,7 +291,7 @@ export default function SignUp() {
             </Box>
 
             <div className={classes.errorDisplay}>
-                {errorMessages.map((errorMessage, index) => (<SnackbarContent
+                {data.errorMessages.map((errorMessage, index) => (<SnackbarContent
                     className={classes.errorDisplay}
                     message={errorMessage}
                     key={index}
@@ -300,9 +299,9 @@ export default function SignUp() {
             </div>
 
             <div className={classes.successDisplay}>
-                {successMessage.length > 0 && <SnackbarContent
+                {data.responseMessage.length > 0 && <SnackbarContent
                     className={classes.snackbar}
-                    message={successMessage}
+                    message={data.responseMessage}
                 />}
             </div>
         </Container>

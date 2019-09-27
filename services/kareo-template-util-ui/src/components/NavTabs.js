@@ -13,7 +13,7 @@ import TemplateSearch from "./TemplateSearch";
 import TemplateCopy from "./TemplateCopy";
 import TemplateUpdate from "./TemplateUpdate";
 
-import { RootContext } from "../RootContext";
+import { AuthContext, ReducerActionTypes } from "../App";
 
 const useStyles = makeStyles({
     container: {
@@ -120,18 +120,22 @@ const Provider = ({children}) => {
     );
 };
 
-export default function NavTabs() {
+const NavTabs = (props) => {
     const routeResult = useRoutes(routes);
     const classes = useStyles();
 
-    const { authenticated, setAuthenticated, authBody, setAuthBody } = useContext(RootContext);
+    const { dispatch } = useContext(AuthContext);
 
-    console.log(`authenticated = ${authenticated}`);
-    console.log(`authBody = ${authBody}`);
+    const isAuthenticated = window.localStorage.getItem('isAuthenticated');
+    const userId = window.localStorage.getItem('userId');
+    const userFirstname = window.localStorage.getItem('userFirstname');
+    const jwt = window.localStorage.getItem('jwt');
 
     const handleLogOut = (event) => {
-        setAuthenticated('false');
-        setAuthBody('');
+        dispatch({
+            type: ReducerActionTypes.LOGOUT
+        });
+
         navigate('/', true);
     };
 
@@ -152,9 +156,9 @@ export default function NavTabs() {
                     <Button onClick={() => navigate('/template-update', true)}>Update Templates</Button>
                 </ButtonGroup>
 
-                {authenticated === 'true' &&
+                {isAuthenticated === 'true' &&
                     <div className={classes.profileBar}>
-                        <div style={{lineHeight: '2rem'}}><Button size="large" variant="text">Chris</Button></div>
+                        <div style={{lineHeight: '2rem'}}><Button size="large" variant="text">Welcome {userFirstname}!</Button></div>
                         <Button onClick={handleLogOut} variant="outlined">Log Out</Button>
 
                         {/* <div>{authBody}</div> */}
@@ -166,4 +170,6 @@ export default function NavTabs() {
             </div>
         </Provider>
     );
-}
+};
+
+export default NavTabs;

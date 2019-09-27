@@ -68,13 +68,10 @@ const useStyles = makeStyles({
 function TemplateCopy() {
     const classes = useStyles();
 
-    const { authenticated, setAuthenticated, authBody, setAuthBody } = useContext(RootContext);
-
-    console.log(`TemplateSearch - authenticated = ${authenticated}`);
-    console.log(`TemplateSearch - authBody = ${authBody}`);
-
-    const authBodyJson = JSON.parse(authBody);
-    console.log(authBodyJson.jwt);
+    // const isAuthenticated = window.localStorage.getItem('isAuthenticated');
+    // const userId = window.localStorage.getItem('userId');
+    // const userFirstname = window.localStorage.getItem('userFirstname');
+    const jwt = window.localStorage.getItem('jwt');
 
     const {
         fromEnv, setFromEnv,
@@ -228,7 +225,7 @@ function TemplateCopy() {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': 'Bearer ' + authBodyJson.jwt
+                'Authorization': 'Bearer ' + jwt
             },
             data: requestBody,
             timeout: 420000,        // 7 min (420 seconds)

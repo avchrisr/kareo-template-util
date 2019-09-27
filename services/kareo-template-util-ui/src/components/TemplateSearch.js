@@ -57,14 +57,10 @@ function createData(id, type, title, author, version, username, createdOn, updat
 export default function TemplateSearch() {
     const classes = useStyles();
 
-    const { authenticated, setAuthenticated, authBody, setAuthBody } = useContext(RootContext);
-
-    console.log(`TemplateSearch - authenticated = ${authenticated}`);
-    console.log(`TemplateSearch - authBody = ${authBody}`);
-
-    const authBodyJson = JSON.parse(authBody);
-    console.log(authBodyJson.jwt);
-
+    // const isAuthenticated = window.localStorage.getItem('isAuthenticated');
+    // const userId = window.localStorage.getItem('userId');
+    // const userFirstname = window.localStorage.getItem('userFirstname');
+    const jwt = window.localStorage.getItem('jwt');
 
     const {
         searchTemplateEnv, setSearchTemplateEnv,
@@ -243,7 +239,7 @@ export default function TemplateSearch() {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': 'Bearer ' + authBodyJson.jwt
+                'Authorization': 'Bearer ' + jwt
             },
             // data: dataSource.buildPayload(),
             timeout: 15000,
