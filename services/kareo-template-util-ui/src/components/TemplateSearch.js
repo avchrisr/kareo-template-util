@@ -154,6 +154,7 @@ export default function TemplateSearch() {
         }
 
         // disable the button until search results comes back
+        setErrorMessages([]);
         setSearchButtonDisabled(true);
 
         let url = `http://${REACT_APP_NGINX_HOSTNAME}:${REACT_APP_NGINX_PORT}/api/${REACT_APP_API_VERSION}/templates`;

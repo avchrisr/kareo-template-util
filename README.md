@@ -19,7 +19,7 @@ consists of following dockerized components:
 
 ### Usage
 
-`docker-compose up --build --scale kareo-template-util-service=3`
+`ORACLE_PROD_DB_JDBC_URL="" ORACLE_PROD_DB_USERNAME="" ORACLE_PROD_DB_PASSWORD="" docker-compose up --build --scale kareo-template-util-service=3`
 
 `docker-compose down`
 
@@ -64,7 +64,6 @@ consists of following dockerized components:
 
 ## TO DO
 
-* copy templates page currently supports DEV environments only
 * pagination / offset / limit on search results
     * change return type from List of Templates to Reponse wrapper with list of templates inside, along with other metadata such as pageNumber, resultCount, etc?
 * login/logout workflow in React app

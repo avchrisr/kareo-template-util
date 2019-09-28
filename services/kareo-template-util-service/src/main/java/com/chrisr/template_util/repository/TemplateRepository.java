@@ -11,6 +11,8 @@ import com.chrisr.template_util.repository.enums.OracleTableName;
 import com.chrisr.template_util.repository.enums.PostgresTableName;
 import com.chrisr.template_util.repository.enums.TemplateType;
 import com.chrisr.template_util.request.UpdateTemplateMetadataRequest;
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +22,7 @@ import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
 
+import javax.sql.DataSource;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,6 +32,7 @@ public class TemplateRepository {
 
     private final NamedParameterJdbcTemplate oracleNamedParameterJdbcTemplate;
     private final NamedParameterJdbcTemplate oracleQaNamedParameterJdbcTemplate;
+    private NamedParameterJdbcTemplate oracleProdNamedParameterJdbcTemplate;
     private final NamedParameterJdbcTemplate postgresNamedParameterJdbcTemplate;
 
     @Autowired
@@ -113,7 +117,7 @@ public class TemplateRepository {
             }
 
             // TODO: implement pagination offset
-            stringBuilder.append(" AND ROWNUM <= 100 ORDER BY t.TITLE ASC");
+            stringBuilder.append(" AND ROWNUM <= 100 ORDER BY t.TITLE ASC, t.TEMPLATES_ID DESC");
         }
 
         return oracleJdbcTemplate.query(stringBuilder.toString(), params, TEMPLATE_SEARCH_ROW_MAPPER);
@@ -376,8 +380,23 @@ public class TemplateRepository {
         } else if ("qa".equalsIgnoreCase(environment)) {
             return oracleQaNamedParameterJdbcTemplate;
         } else if ("prod".equalsIgnoreCase(environment)) {
-            // TODO: setting it to QA env for now
-            return oracleQaNamedParameterJdbcTemplate;
+            if (oracleProdNamedParameterJdbcTemplate != null) {
+                return oracleProdNamedParameterJdbcTemplate;
+            }
+
+            String jdbcUrl = System.getenv("ORACLE_PROD_DB_JDBC_URL");
+            String username = System.getenv("ORACLE_PROD_DB_USERNAME");
+            String password = System.getenv("ORACLE_PROD_DB_PASSWORD");
+
+            HikariConfig hikariConfig = new HikariConfig();
+            hikariConfig.setJdbcUrl(jdbcUrl);
+            hikariConfig.setUsername(username);
+            hikariConfig.setPassword(password);
+//            hikariConfig.setMaximumPoolSize(10);
+            DataSource dataSource = new HikariDataSource(hikariConfig);
+
+            oracleProdNamedParameterJdbcTemplate = new NamedParameterJdbcTemplate(dataSource);
+            return oracleProdNamedParameterJdbcTemplate;
         } else {
             String errorMessage = String.format("Unrecognized environment = %s", environment);
             logger.error(errorMessage);

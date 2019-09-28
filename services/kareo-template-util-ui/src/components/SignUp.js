@@ -113,6 +113,7 @@ export default function SignUp() {
 
         setData({
             ...data,
+            errorMessages: [],
             isSubmitting: true
         });
 
@@ -177,6 +178,7 @@ export default function SignUp() {
             setData({
                 ...data,
                 isSubmitting: true,
+                errorMessages: [],
                 responseMessage: `Successfully registered user. Redirecting to the login page...`
             });
 
