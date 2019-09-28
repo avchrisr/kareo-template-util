@@ -380,13 +380,21 @@ public class TemplateRepository {
         } else if ("qa".equalsIgnoreCase(environment)) {
             return oracleQaNamedParameterJdbcTemplate;
         } else if ("prod".equalsIgnoreCase(environment)) {
-            if (oracleProdNamedParameterJdbcTemplate != null) {
-                return oracleProdNamedParameterJdbcTemplate;
-            }
-
             String jdbcUrl = System.getenv("ORACLE_PROD_DB_JDBC_URL");
             String username = System.getenv("ORACLE_PROD_DB_USERNAME");
             String password = System.getenv("ORACLE_PROD_DB_PASSWORD");
+
+            if (jdbcUrl == null || jdbcUrl.isBlank() ||
+                username == null || username.isBlank() ||
+                password == null || password.isBlank()) {
+                // default to QA
+                logger.warn("Oracle PROD Jdbc Environment Variables Not Found. Defaulting to Oracle QA...");
+                return oracleQaNamedParameterJdbcTemplate;
+            }
+
+            if (oracleProdNamedParameterJdbcTemplate != null) {
+                return oracleProdNamedParameterJdbcTemplate;
+            }
 
             HikariConfig hikariConfig = new HikariConfig();
             hikariConfig.setJdbcUrl(jdbcUrl);
