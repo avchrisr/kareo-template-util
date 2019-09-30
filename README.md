@@ -24,6 +24,12 @@ kareo-template-util is a utility tool, which allows logged in users to search, c
 
 ## System Architecture
 
+### UI mockups
+
+[![template-util-mockups.jpg](https://i.postimg.cc/9fScCDQW/template-util-mockups.jpg)](https://postimg.cc/2q4sx8WJ)
+
+-----------
+
 kareo-template-util consists of following dockerized components:
 
 **kareo-template-util-ui**
