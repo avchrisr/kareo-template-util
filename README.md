@@ -33,10 +33,10 @@ kareo-template-util consists of following dockerized components:
 - Backend service layer (Java Spring Boot)
 
 **postgres**
-- Datastore
+- datastore
 
 **nginx**
-- single point of entry into Backend with the ability to load balance to multiple instances of Backend services
+- acting as a reverse proxy, it's the single point of entry into Backend with the ability to load balance to multiple instances of Backend services
 
 -----------
 
