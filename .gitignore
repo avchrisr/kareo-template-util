@@ -31,7 +31,9 @@ HELP.md
 ### postgres data ###
 pgdata/
 
+### env vars ###
+.env
+
 ### Other ###
 *.log
 my-server-log*
-
